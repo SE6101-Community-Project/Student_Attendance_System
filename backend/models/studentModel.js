@@ -61,8 +61,14 @@ const studentSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  faceEncoding: {
+    type: [Number],   // stores 128 numbers
+    select: false, 
+    default: null
+  },
   faceDataRegistered: {
     type: Boolean,
+    select: false, 
     default: false
   },
   profileImage: {
@@ -79,4 +85,4 @@ const studentSchema = new mongoose.Schema({
 
 const studentModel = mongoose.models.student || mongoose.model('student', studentSchema);
 
-module.exports = studentModel;
+export default studentModel;
