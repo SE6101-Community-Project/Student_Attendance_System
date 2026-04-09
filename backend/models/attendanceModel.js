@@ -94,4 +94,4 @@ attendanceSchema.index({ course: 1, date: 1 });
 
 const attendanceModel = mongoose.models.attendance || mongoose.model('attendance', attendanceSchema);
 
-module.exports = attendanceModel;
+export default attendanceModel;

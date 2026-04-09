@@ -98,4 +98,4 @@ const faceDataSchema = new mongoose.Schema({
 
 const faceDataModel = mongoose.models.faceData || mongoose.model('faceData', faceDataSchema);
 
-module.exports = faceDataModel;
+export default faceDataModel;

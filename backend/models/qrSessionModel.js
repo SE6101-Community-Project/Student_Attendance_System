@@ -96,4 +96,4 @@ const qrSessionSchema = new mongoose.Schema({
 
 const qrSessionModel = mongoose.models.qrSession || mongoose.model('qrSession', qrSessionSchema);
 
-module.exports = qrSessionModel;
+export default qrSessionModel;
