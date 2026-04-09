@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+import mongoose from 'mongoose';
 
 const adminSchema = new mongoose.Schema({
   adminId: {
@@ -72,4 +71,4 @@ const adminSchema = new mongoose.Schema({
 
 const adminModel = mongoose.models.admin || mongoose.model('admin', adminSchema);
 
-module.exports = adminModel;
+export default adminModel;
