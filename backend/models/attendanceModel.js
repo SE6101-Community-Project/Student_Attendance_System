@@ -92,6 +92,6 @@ attendanceSchema.index({ attendanceId: 1 });
 attendanceSchema.index({ student: 1, session: 1 }, { unique: true });
 attendanceSchema.index({ course: 1, date: 1 });
 
-const attendanceModel = mongoose.models.attendance || mongoose.model('attendance', attendanceSchema);
+const attendanceModel = mongoose.models.Attendance || mongoose.model('Attendance', attendanceSchema);
 
 export default attendanceModel;

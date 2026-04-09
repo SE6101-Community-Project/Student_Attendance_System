@@ -75,6 +75,6 @@ const lecturerSchema = new mongoose.Schema({
   timestamps: true
 });
 
-const lecturerModel = mongoose.models.lecturer || mongoose.model('lecturer', lecturerSchema);
+const lecturerModel = mongoose.models.Lecturer || mongoose.model('Lecturer', lecturerSchema);
 
 export default lecturerModel;

@@ -96,6 +96,6 @@ const faceDataSchema = new mongoose.Schema({
   timestamps: true
 });
 
-const faceDataModel = mongoose.models.faceData || mongoose.model('faceData', faceDataSchema);
+const faceDataModel = mongoose.models.FaceData || mongoose.model('FaceData', faceDataSchema);
 
 export default faceDataModel;
