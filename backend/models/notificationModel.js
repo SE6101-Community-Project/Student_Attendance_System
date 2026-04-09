@@ -58,7 +58,6 @@ const notificationSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Indexes
-notificationSchema.index({ notificationId: 1 });
 notificationSchema.index({ recipient: 1, recipientModel: 1 });
 notificationSchema.index({ isRead: 1 });
 notificationSchema.index({ createdAt: -1 });
@@ -114,4 +113,4 @@ notificationSchema.statics.sendBulkNotifications = async function(recipients, no
 
 const notificationModel = mongoose.models.notification || mongoose.model('notification', notificationSchema);
 
-module.exports = notificationModel;
+export default notificationModel;

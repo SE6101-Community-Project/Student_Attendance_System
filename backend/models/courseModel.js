@@ -104,4 +104,4 @@ const courseSchema = new mongoose.Schema({
 
 const courseModel = mongoose.models.course || mongoose.model('course', courseSchema);
 
-module.exports = courseModel;
+export default courseModel;
