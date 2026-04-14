@@ -111,6 +111,6 @@ notificationSchema.statics.sendBulkNotifications = async function(recipients, no
   return await this.insertMany(notifications);
 };
 
-const notificationModel = mongoose.models.notification || mongoose.model('notification', notificationSchema);
+const notificationModel = mongoose.models.Notification || mongoose.model('Notification', notificationSchema);
 
 export default notificationModel;
