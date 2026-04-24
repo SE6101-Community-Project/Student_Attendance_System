@@ -5,30 +5,33 @@ from dotenv import load_dotenv
 import os
 import logging
 
-# Load environment variables
 load_dotenv()
 
-# Setup logging
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
-# Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # Allow requests from Node.js backend
+CORS(app)
 
-# Initialize face recognition service
-tolerance = float(os.getenv("FACE_RECOGNITION_TOLERANCE", 0.6))
-face_service = FaceRecognitionService(tolerance=tolerance)
+# ── Config from .env ──
+TOLERANCE = float(os.getenv("FACE_RECOGNITION_TOLERANCE", 0.6))
+MIN_CONFIDENCE = float(os.getenv("MIN_FACE_CONFIDENCE", 0.4))
+MAX_IMAGE_SIZE = int(os.getenv("MAX_IMAGE_SIZE", 20_971_520))
 
-MAX_IMAGE_SIZE = int(os.getenv("MAX_IMAGE_SIZE", 20971520))  # 20MB
+face_service = FaceRecognitionService(tolerance=TOLERANCE)
+
+logger.info(
+    f"Config | tolerance={TOLERANCE} "
+    f"min_confidence={MIN_CONFIDENCE} "
+    f"max_image_size={MAX_IMAGE_SIZE}"
+)
 
 
 # ─────────────────────────────────────────
 # Health check
-# @route GET /health
 # ─────────────────────────────────────────
 @app.route("/health", methods=["GET"])
 def health_check():
@@ -36,116 +39,80 @@ def health_check():
         "status": "healthy",
         "service": "Face Recognition Service",
         "version": "1.0.0",
+        "config": {
+            "tolerance": TOLERANCE,
+            "min_confidence": MIN_CONFIDENCE,
+        },
     }), 200
 
 
 # ─────────────────────────────────────────
-# Validate request has image
+# Helpers
 # ─────────────────────────────────────────
 def validate_image(data: dict, field: str = "image") -> tuple:
     if not data:
         return False, "No data provided"
-
-    if field not in data:
-        return False, f"'{field}' field is required"
-
-    if not data[field]:
-        return False, f"'{field}' cannot be empty"
-
-    # Check image size
-    image_size = len(data[field].encode("utf-8"))
-    if image_size > MAX_IMAGE_SIZE:
-        return False, "Image size too large. Maximum 10MB allowed"
-
+    if field not in data or not data[field]:
+        return False, f"'{field}' field is required and cannot be empty"
+    if len(data[field].encode("utf-8")) > MAX_IMAGE_SIZE:
+        return False, "Image size too large. Maximum 20 MB allowed"
     return True, None
 
 
 # ─────────────────────────────────────────
 # Detect face
-# @route POST /detect-face
 # ─────────────────────────────────────────
 @app.route("/detect-face", methods=["POST"])
 def detect_face():
     try:
         data = request.get_json()
-
-        # Validate
         is_valid, error = validate_image(data, "image")
         if not is_valid:
-            return jsonify({
-                "success": False,
-                "message": error
-            }), 400
+            return jsonify({"success": False, "message": error}), 400
 
-        # Detect
         result = face_service.detect_faces(data["image"])
-
         return jsonify(result), 200
 
     except ValueError as e:
-        return jsonify({
-            "success": False,
-            "message": str(e)
-        }), 400
-
+        return jsonify({"success": False, "message": str(e)}), 400
     except Exception as e:
-        logger.error(f"Detect face endpoint error: {str(e)}")
-        return jsonify({
-            "success": False,
-            "message": "Internal server error"
-        }), 500
+        logger.error(f"/detect-face error: {e}")
+        return jsonify({"success": False, "message": "Internal server error"}), 500
 
 
 # ─────────────────────────────────────────
 # Register face
-# @route POST /register-face
 # ─────────────────────────────────────────
 @app.route("/register-face", methods=["POST"])
 def register_face():
     try:
         data = request.get_json()
-
-        # Validate image
         is_valid, error = validate_image(data, "image")
         if not is_valid:
+            return jsonify({"success": False, "message": error}), 400
+
+        if not data.get("student_id"):
             return jsonify({
                 "success": False,
-                "message": error
+                "message": "student_id is required",
             }), 400
 
-        # Validate student_id
-        if "student_id" not in data or not data["student_id"]:
-            return jsonify({
-                "success": False,
-                "message": "student_id is required"
-            }), 400
-
-        # Register
         result = face_service.register_face(
-            data["image"],
-            str(data["student_id"])
+            data["image"], str(data["student_id"])
         )
 
         status_code = 200 if result["success"] else 400
         return jsonify(result), status_code
 
     except ValueError as e:
-        return jsonify({
-            "success": False,
-            "message": str(e)
-        }), 400
-
+        return jsonify({"success": False, "message": str(e)}), 400
     except Exception as e:
-        logger.error(f"Register face endpoint error: {str(e)}")
-        return jsonify({
-            "success": False,
-            "message": "Internal server error"
-        }), 500
+        logger.error(f"/register-face error: {e}")
+        return jsonify({"success": False, "message": "Internal server error"}), 500
 
 
 # ─────────────────────────────────────────
 # Verify face
-# @route POST /verify-face
 # ─────────────────────────────────────────
 @app.route("/verify-face", methods=["POST"])
 def verify_face():
@@ -155,54 +122,60 @@ def verify_face():
         # Validate live image
         is_valid, error = validate_image(data, "live_image")
         if not is_valid:
-            return jsonify({
-                "success": False,
-                "message": error
-            }), 400
+            return jsonify({"success": False, "message": error}), 400
 
         # Validate stored encoding
-        if "stored_encoding" not in data:
+        stored_encoding = data.get("stored_encoding")
+        if stored_encoding is None:
             return jsonify({
                 "success": False,
-                "message": "stored_encoding is required"
+                "message": "stored_encoding is required",
             }), 400
-
-        if not isinstance(data["stored_encoding"], list):
+        if not isinstance(stored_encoding, list):
             return jsonify({
                 "success": False,
-                "message": "stored_encoding must be an array"
+                "message": "stored_encoding must be an array",
             }), 400
-
-        if len(data["stored_encoding"]) != 128:
+        if len(stored_encoding) != 128:
             return jsonify({
                 "success": False,
-                "message": "stored_encoding must have 128 dimensions"
+                "message": "stored_encoding must have exactly 128 dimensions",
             }), 400
 
-        # Verify
         result = face_service.verify_face(
-            data["live_image"],
-            data["stored_encoding"]
+            data["live_image"], stored_encoding
         )
+
+        # ── Minimum confidence gate ──
+        # Even if compare_faces says is_match=True (distance <= tolerance=0.6),
+        # reject if confidence < MIN_CONFIDENCE (0.4).
+        # Since confidence = 1 - distance, and tolerance = 0.6:
+        #   boundary confidence = 1 - 0.6 = 0.4
+        # So MIN_CONFIDENCE=0.4 accepts everything up to distance=0.6 exactly.
+        if result.get("is_match") and result.get("confidence", 0) < MIN_CONFIDENCE:
+            logger.info(
+                f"Match overridden by min_confidence gate | "
+                f"confidence={result['confidence']} < min={MIN_CONFIDENCE}"
+            )
+            result["is_match"] = False
+            result["message"] = (
+                f"Face similarity too low "
+                f"(confidence={result['confidence']:.2f}, "
+                f"required >= {MIN_CONFIDENCE:.2f}). "
+                f"Please try again."
+            )
 
         return jsonify(result), 200
 
     except ValueError as e:
-        return jsonify({
-            "success": False,
-            "message": str(e)
-        }), 400
-
+        return jsonify({"success": False, "message": str(e)}), 400
     except Exception as e:
-        logger.error(f"Verify face endpoint error: {str(e)}")
-        return jsonify({
-            "success": False,
-            "message": "Internal server error"
-        }), 500
+        logger.error(f"/verify-face error: {e}")
+        return jsonify({"success": False, "message": "Internal server error"}), 500
 
 
 # ─────────────────────────────────────────
-# Run server
+# Run
 # ─────────────────────────────────────────
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5001))
@@ -210,9 +183,4 @@ if __name__ == "__main__":
     debug = os.getenv("DEBUG", "False").lower() == "true"
 
     logger.info(f"Starting Face Recognition Service on {host}:{port}")
-
-    app.run(
-        host=host,
-        port=port,
-        debug=debug
-    )
+    app.run(host=host, port=port, debug=debug)
