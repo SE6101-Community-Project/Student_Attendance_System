@@ -62,8 +62,8 @@ const qrSessionSchema = new mongoose.Schema({
   radiusInMeters: {
     type: Number,
     default: 100,
-    min: [10, 'Radius must be at least 10 meters'],
-    max: [500, 'Radius cannot exceed 500 meters']
+    // min: [10, 'Radius must be at least 10 meters'],
+    // max: [500, 'Radius cannot exceed 500 meters']
   },
   startTime: {
     type: Date,

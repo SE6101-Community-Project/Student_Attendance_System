@@ -22,7 +22,7 @@ const lecturerSchema = new mongoose.Schema({
     lowercase: true,
     trim: true,
     match: [
-      /^[a-z.]+@foc\.sab\.ac\.lk$/,
+      /^[a-z.]+@std\.foc\.sab\.ac\.lk$/,
       'Please use valid university lecturer email'
     ]
   },
@@ -45,7 +45,7 @@ const lecturerSchema = new mongoose.Schema({
   designation: {
     type: String,
     required: true,
-    enum: ['Professor', 'Senior Lecturer', 'Lecturer', 'Assistant Lecturer', 'Instructor']
+    enum: ['Professor', 'Senior Lecturer', 'Lecturer', 'Assistant Lecturer', 'Visiting Lecturer', 'Instructor']
   },
   courses: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -63,10 +63,24 @@ const lecturerSchema = new mongoose.Schema({
     type: String,
     default: null
   },
-  resetPasswordToken: String,
-  resetPasswordExpire: Date,
-  verificationToken: String,
-  verificationTokenExpire: Date,
+  resetPasswordToken: {
+    type: String,
+    default: null,
+  },
+  resetPasswordExpire: {
+    type: Date,
+    default: null,
+  },
+
+  // ── Email Verification ──
+  verificationToken: {
+    type: String,
+    default: null,
+  },
+  verificationTokenExpire: {
+    type: Date,
+    default: null,
+  },
   lastLogin: {
     type: Date,
     default: null
