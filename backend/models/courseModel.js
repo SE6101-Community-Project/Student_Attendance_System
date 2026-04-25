@@ -25,7 +25,7 @@ const courseSchema = new mongoose.Schema({
     type: Number,
     required: [true, 'Course credits are required'],
     min: [1, 'Credits must be at least 1'],
-    max: [6, 'Credits cannot exceed 6']
+    max: [8, 'Credits cannot exceed 8']
   },
   department: {
     type: String,
@@ -102,6 +102,6 @@ const courseSchema = new mongoose.Schema({
   timestamps: true
 });
 
-const courseModel = mongoose.models.course || mongoose.model('course', courseSchema);
+const courseModel = mongoose.models.Course || mongoose.model('Course', courseSchema);
 
 export default courseModel;
