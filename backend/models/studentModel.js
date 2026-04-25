@@ -41,7 +41,7 @@ const studentSchema = new mongoose.Schema({
   batch: {
     type: String,
     required: [true, 'Batch is required'],
-    enum: ['2021/2022', '2022/2023', '2023/2024', '2024/2025', '2025/2026']
+    enum: ['2019/2020', '2020/2021', '2021/2022', '2022/2023', '2023/2024', '2024/2025', '2025/2026']
   },
   department: {
     type: String,
@@ -63,24 +63,42 @@ const studentSchema = new mongoose.Schema({
   },
   faceEncoding: {
     type: [Number],   // stores 128 numbers
-    select: false, 
-    default: null
+    default: null,
+    select: false
   },
   faceDataRegistered: {
     type: Boolean,
-    select: false, 
-    default: false
+    default: false,
+    select: false
   },
   profileImage: {
     type: String,
-    default: null
+    default: null,
   },
-  resetPasswordToken: String,
-  resetPasswordExpire: Date,
-  verificationToken: String,
-  verificationTokenExpire: Date
+  resetPasswordToken: {
+    type: String,
+    default: null,
+    select: false
+  },
+  resetPasswordExpire: {
+    type: Date,
+    default: null,
+    select: false
+  },
+
+  // ── Email Verification ──
+  verificationToken: {
+    type: String,
+    default: null,
+    select: false 
+  },
+  verificationTokenExpire: {
+    type: Date,
+    default: null,
+    select: false
+  },
 }, {
-  timestamps: true
+    timestamps: true
 });
 
 const studentModel = mongoose.models.Student || mongoose.model('Student', studentSchema);
