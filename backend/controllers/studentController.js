@@ -875,4 +875,129 @@ export const changeStudentPassword = async (req, res) => {
   }
 };
 
+export const getAttendanceSummary = async (req, res) => {
+  try {
+    const { courseId } = req.query;
+
+    if (!courseId) {
+      return res.status(400).json({
+        success: false,
+        message: "courseId query parameter is required",
+      });
+    }
+
+    const stats = await calculateAttendanceStats(req.user._id, courseId);
+
+    res.status(200).json({
+      success: true,
+      data: stats,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+// pass 
+export const getAllStudents = async (req, res) => {
+  try {
+    const {
+      batch,
+      department,
+      isActive,
+      isVerified,
+      search,
+      page = 1,
+      limit = 20,
+    } = req.query;
+
+    const filter = {};
+
+    if (batch) 
+      filter.batch = batch;
+    if (department) 
+      filter.department = department;
+    if (isActive !== undefined) 
+      filter.isActive = isActive === "true";
+    if (isVerified !== undefined) 
+      filter.isVerified = isVerified === "true";
+
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { studentId: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const [students, total] = await Promise.all([
+      studentModel
+        .find(filter)
+        .select(
+          "-password -verificationToken -resetPasswordToken " +
+          "-verificationTokenExpire -resetPasswordExpire " +
+          "+faceDataRegistered"
+        )
+        .populate("courses", "courseCode courseName")
+        .skip(skip)
+        .limit(parseInt(limit))
+        .sort({ createdAt: -1 }),
+      studentModel.countDocuments(filter),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: students,
+      pagination: {
+        total,
+        page: parseInt(page),
+        pages: Math.ceil(total / parseInt(limit)),
+        limit: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// pass 
+export const getStudentById = async (req, res) => {
+  try {
+    const student = await studentModel
+      .findById(req.params.id)
+      .select(
+        "-password -verificationToken -resetPasswordToken " + 
+        "-verificationTokenExpire -resetPasswordExpire " +
+        "+faceDataRegistered"
+      )
+      .populate("courses", "courseCode courseName semester");
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: student,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
 
