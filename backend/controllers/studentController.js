@@ -600,3 +600,69 @@ export const forgotStudentPassword = async (req, res) => {
 
 
 
+// ─────────────────────────────────────────
+// @desc    Send OTP for password reset
+// @route   POST /api/student/send-otp
+// @access  Public
+// ─────────────────────────────────────────
+// pass 
+export const sendPasswordResetOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+
+    const student = await studentModel.findOne({ email });
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "No account found with this email",
+      });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Hash and store OTP
+    const hashedOTP = crypto
+      .createHash("sha256")
+      .update(otp)
+      .digest("hex");
+
+    student.resetPasswordToken = hashedOTP;
+    student.resetPasswordExpire = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+    await student.save();
+
+    // Send OTP via email
+    try {
+      await sendOTPEmail(email, student.name, otp);
+    } catch (emailError) {
+      console.error("EMAIL ERROR:", emailError)
+      student.resetPasswordExpire = null;
+      await student.save();
+
+      return res.status(500).json({
+        success: false,
+        message: "Email could not be sent",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "OTP sent to your email",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
