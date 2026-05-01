@@ -410,3 +410,134 @@ export const verifyStudentEmail = async (req, res) => {
   }
 };
 
+// ── Helper: Generate Verification HTML ──
+function getVerificationHTML(status, title, message, email) {
+  const isSuccess = status === 'success';
+  const accentColor = isSuccess ? '#775a19' : '#ba1a1a';
+  const icon = isSuccess ? '✅' : status === 'expired' ? '⏰' : '❌';
+
+  // Deep link to open the app's login screen
+  const deepLink = 'frontend:///(auth)/login';
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${title}</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+          font-family: -apple-system, 'Segoe UI', Arial, sans-serif; 
+          background: #f9f9f9; 
+          min-height: 100vh; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          padding: 20px;
+        }
+        .card { 
+          background: white; 
+          border-radius: 12px; 
+          padding: 40px 32px; 
+          max-width: 420px; 
+          width: 100%; 
+          text-align: center; 
+          box-shadow: 0 10px 40px rgba(0,17,58,0.08);
+          border-left: 3px solid ${accentColor};
+        }
+        .icon { font-size: 48px; margin-bottom: 16px; }
+        .badge {
+          display: inline-block;
+          font-size: 9px;
+          letter-spacing: 3px;
+          color: ${accentColor};
+          text-transform: uppercase;
+          font-weight: 700;
+          margin-bottom: 12px;
+        }
+        h1 { 
+          color: #00113a; 
+          font-size: 24px; 
+          margin-bottom: 12px; 
+          font-weight: 400;
+        }
+        p { 
+          color: #444650; 
+          font-size: 14px; 
+          line-height: 1.7; 
+          margin-bottom: 12px; 
+        }
+        .email { font-weight: 700; color: #00113a; }
+        .open-app-btn {
+          display: inline-block;
+          background: #00113a;
+          color: white;
+          padding: 16px 32px;
+          border-radius: 4px;
+          text-decoration: none;
+          font-size: 12px;
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          font-weight: 700;
+          margin-top: 20px;
+          margin-bottom: 12px;
+        }
+        .open-app-btn:hover { background: #002366; }
+        .hint {
+          font-size: 12px;
+          color: #757682;
+          margin-top: 8px;
+        }
+        .divider {
+          height: 1px;
+          background: rgba(197,198,210,0.3);
+          margin: 24px 0;
+        }
+        .footer { 
+          font-size: 9px; 
+          letter-spacing: 3px; 
+          color: #757682; 
+          text-transform: uppercase;
+          opacity: 0.5;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="icon">${icon}</div>
+        <span class="badge">${isSuccess ? 'Verification Complete' : 'Verification Issue'}</span>
+        <h1>${title}</h1>
+        <p>${message}</p>
+        
+        ${isSuccess ? `
+          <a href="${deepLink}" class="open-app-btn">
+            Open App & Login
+          </a>
+          <p class="hint">
+            If the button doesn't work, open the Attendance App manually and login.
+          </p>
+        ` : `
+          <a href="${deepLink}" class="open-app-btn" style="background: ${accentColor};">
+            Open App
+          </a>
+        `}
+        
+        <div class="divider"></div>
+        <p class="footer">Sabaragamuwa University of Sri Lanka</p>
+      </div>
+
+      ${isSuccess ? `
+        <script>
+          // Auto-attempt to open the app after 1 second
+          setTimeout(function() {
+            window.location.href = '${deepLink}';
+          }, 1500);
+        </script>
+      ` : ''}
+    </body>
+    </html>
+  `;
+}
+
+
