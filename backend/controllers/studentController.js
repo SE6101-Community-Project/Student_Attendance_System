@@ -666,3 +666,213 @@ export const sendPasswordResetOTP = async (req, res) => {
 };
 
 
+// ─────────────────────────────────────────
+// @desc    Verify OTP
+// @route   POST /api/student/verify-otp
+// @access  Public
+// ─────────────────────────────────────────
+export const verifyPasswordResetOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and OTP are required",
+      });
+    }
+
+    const hashedOTP = crypto
+      .createHash("sha256")
+      .update(otp)
+      .digest("hex");
+
+    const student = await studentModel.findOne({
+      email,
+      resetPasswordToken: hashedOTP,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!student) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP",
+      });
+    }
+
+    // Generate a temporary reset token for the password reset step
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const hashedResetToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    student.resetPasswordToken = hashedResetToken;
+    student.resetPasswordExpire = new Date(Date.now() + 5 * 60 * 1000); // 5 min
+    await student.save();
+
+    res.status(200).json({
+      success: true,
+      message: "OTP verified successfully",
+      resetToken: resetToken, // Send to frontend for reset-password step
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+export const resetStudentPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Token and new password are required",
+      });
+    }
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const student = await studentModel.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!student) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired reset token",
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    student.password = await bcrypt.hash(newPassword, salt);
+    student.resetPasswordToken = null;
+    student.resetPasswordExpire = null;
+    await student.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset successfully. Please login.",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+export const getStudentProfile = async (req, res) => {
+  try {
+    const student = await studentModel
+      .findById(req.user._id)
+      .populate("courses", "courseCode courseName credits semester");
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: student,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+export const updateStudentProfile = async (req, res) => {
+  try {
+    const { name, mobile, profileImage } = req.body;
+
+    const student = await studentModel.findById(req.user._id);
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    if (name) student.name = name;
+    if (mobile) student.mobile = mobile;
+    if (profileImage) student.profileImage = profileImage;
+
+    const updated = await student.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: {
+        _id: updated._id,
+        studentId: updated.studentId,
+        name: updated.name,
+        email: updated.email,
+        mobile: updated.mobile,
+        profileImage: updated.profileImage,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+export const changeStudentPassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide current and new password",
+      });
+    }
+
+    const student = await studentModel
+      .findById(req.user._id)
+      .select("+password");
+
+    const isMatch = await bcrypt.compare(currentPassword, student.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    student.password = await bcrypt.hash(newPassword, salt);
+    await student.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
