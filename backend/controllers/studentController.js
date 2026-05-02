@@ -410,6 +410,7 @@ export const verifyStudentEmail = async (req, res) => {
   }
 };
 
+<<<<<<< api/controllers
 // ── Helper: Generate Verification HTML ──
 function getVerificationHTML(status, title, message, email) {
   const isSuccess = status === 'success';
@@ -1001,3 +1002,5 @@ export const getStudentById = async (req, res) => {
 
 
 
+=======
+>>>>>>> development
