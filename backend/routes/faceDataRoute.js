@@ -14,5 +14,7 @@ import {
 const router = express.Router();
 
 router.post("/register", protect, studentOnly, registerFaceData);
+router.post("/verify", protect, studentOnly, verifyFaceController);
+
 
 export default router;
