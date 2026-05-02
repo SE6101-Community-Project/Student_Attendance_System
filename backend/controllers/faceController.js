@@ -1,10 +1,15 @@
+// controllers/faceController.js
 import studentModel from "../models/studentModel.js";
-  import {
-    registerFaceEncoding,
-    verifyFace,
-  } from "../services/faceService.js";
+import {
+  registerFaceEncoding,
+  verifyFace,
+} from "../services/faceService.js";
 
-  export const registerFaceData = async (req, res) => {
+
+// @desc    Register student face encoding
+// @route   POST /api/face/register
+// @access  Private (Student)
+export const registerFaceData = async (req, res) => {
   try {
     const { imageBase64 } = req.body;
 
@@ -15,6 +20,7 @@ import studentModel from "../models/studentModel.js";
       });
     }
 
+    // Get student to access their studentId string (e.g. "21CSE0001")
     const student = await studentModel.findById(req.user._id);
 
     if (!student) {
@@ -23,7 +29,7 @@ import studentModel from "../models/studentModel.js";
         message: "Student not found",
       });
     }
-    
+
     // Call Python face service
     const registration = await registerFaceEncoding(
       imageBase64,
@@ -88,6 +94,9 @@ import studentModel from "../models/studentModel.js";
 };
 
 
+// @desc    Verify face during attendance marking
+// @route   POST /api/face/verify
+// @access  Private (Student)
 export const verifyFaceController = async (req, res) => {
   try {
     const { liveImageBase64 } = req.body;
@@ -179,7 +188,9 @@ export const verifyFaceController = async (req, res) => {
   }
 };
 
-
+// @desc    Get face registration status
+// @route   GET /api/face/status
+// @access  Private (Student)
 export const getFaceDataStatus = async (req, res) => {
   try {
     const student = await studentModel
@@ -218,7 +229,6 @@ export const getFaceDataStatus = async (req, res) => {
     });
   }
 };
-
 
 
 // @desc    Delete student face data
