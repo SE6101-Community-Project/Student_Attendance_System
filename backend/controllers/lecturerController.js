@@ -100,3 +100,75 @@ export const registerLecturer = async (req, res) => {
     });
   }
 };
+
+
+// ─────────────────────────────────────────
+// @desc    Login lecturer
+// @route   POST /api/lecturer/login
+// @access  Public
+// ─────────────────────────────────────────
+export const loginLecturer = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide email and password",
+      });
+    }
+
+    const lecturer = await lecturerModel
+      .findOne({ email })
+      .select("+password")
+      .populate("courses", "courseCode courseName");
+
+    if (!lecturer) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    if (!lecturer.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: "Account deactivated. Contact admin.",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, lecturer.password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    lecturer.lastLogin = new Date();
+    await lecturer.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      data: {
+        _id: lecturer._id,
+        lecturerId: lecturer.lecturerId,
+        name: lecturer.name,
+        email: lecturer.email,
+        department: lecturer.department,
+        designation: lecturer.designation,
+        courses: lecturer.courses,
+        isVerified: lecturer.isVerified,
+        lastLogin: lecturer.lastLogin,
+      },
+      token: generateToken(lecturer._id, "lecturer"),
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
