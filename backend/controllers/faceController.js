@@ -23,7 +23,32 @@ import studentModel from "../models/studentModel.js";
         message: "Student not found",
       });
     }
-    // TODO: call face service next
+    
+    // Call Python face service
+    const registration = await registerFaceEncoding(
+      imageBase64,
+      student.studentId,
+    );
+
+    if (!registration.success) {
+      return res.status(400).json({
+        success: false,
+        message:
+          registration.message ||
+          "Face registration failed. Please take a clearer photo.",
+      });
+    }
+
+    // Validate encoding dimensions
+    if (
+      !Array.isArray(registration.encoding) ||
+      registration.encoding.length !== 128
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid face encoding received. Please try again.",
+      });
+    }
   } catch (error) {
     // error handling
   }
