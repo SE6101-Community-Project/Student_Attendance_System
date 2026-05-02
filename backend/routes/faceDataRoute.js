@@ -13,6 +13,6 @@ import {
 
 const router = express.Router();
 
-// Routes will be added next...
+router.post("/register", protect, studentOnly, registerFaceData);
 
 export default router;
