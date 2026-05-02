@@ -49,7 +49,40 @@ import studentModel from "../models/studentModel.js";
         message: "Invalid face encoding received. Please try again.",
       });
     }
+
+    // Single DB write — everything lives in studentModel
+    const updated = await studentModel
+      .findByIdAndUpdate(
+        req.user._id,
+        {
+          faceEncoding: registration.encoding,
+          faceDataRegistered: true,
+        },
+        { new: true },
+      )
+      .select("+faceDataRegistered");
+
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        message: "Failed to update student record",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Face registered successfully",
+      data: {
+        faceDataRegistered: true,
+        qualityScore: registration.qualityScore ?? null,
+        lastUpdated: updated.updatedAt,
+      },
+    });
   } catch (error) {
-    // error handling
+    console.error("[registerFaceData] Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Internal server error",
+    });
   }
 };
