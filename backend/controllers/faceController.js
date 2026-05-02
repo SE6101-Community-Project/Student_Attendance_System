@@ -178,3 +178,43 @@ export const verifyFaceController = async (req, res) => {
     });
   }
 };
+
+
+export const getFaceDataStatus = async (req, res) => {
+  try {
+    const student = await studentModel
+      .findById(req.user._id)
+      .select("+faceDataRegistered +faceEncoding");
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    const hasEncoding =
+      Array.isArray(student.faceEncoding) &&
+      student.faceEncoding.length === 128;
+
+    // Both flags must be true for a valid registration
+    const registered = student.faceDataRegistered && hasEncoding;
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        // ── primary field read by profile screen ──
+        faceDataRegistered: registered,
+        // ── extra detail for debugging ──
+        hasEncoding,
+        lastUpdated: registered ? student.updatedAt : null,
+      },
+    });
+  } catch (error) {
+    console.error("[getFaceDataStatus] Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to get face data status",
+    });
+  }
+};
