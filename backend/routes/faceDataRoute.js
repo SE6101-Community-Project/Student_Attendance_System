@@ -16,6 +16,7 @@ const router = express.Router();
 router.post("/register", protect, studentOnly, registerFaceData);
 router.post("/verify", protect, studentOnly, verifyFaceController);
 router.get("/status", protect, studentOnly, getFaceDataStatus);
+router.delete("/:studentId", protect, adminOnly, deleteFaceData);
 
 
 
