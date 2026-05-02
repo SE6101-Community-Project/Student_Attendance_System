@@ -218,3 +218,39 @@ export const getFaceDataStatus = async (req, res) => {
     });
   }
 };
+
+
+
+// @desc    Delete student face data
+// @route   DELETE /api/face/:studentId
+// @access  Private (Admin)
+export const deleteFaceData = async (req, res) => {
+  try {
+    // studentId here is MongoDB _id from route param
+    const student = await studentModel.findById(req.params.studentId);
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    // Clear face fields directly in studentModel — no separate model needed
+    await studentModel.findByIdAndUpdate(req.params.studentId, {
+      faceEncoding: null,
+      faceDataRegistered: false,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Face data deleted successfully",
+    });
+  } catch (error) {
+    console.error("[deleteFaceData] Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Internal server error",
+    });
+  }
+};
