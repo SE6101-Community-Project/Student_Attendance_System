@@ -999,5 +999,31 @@ export const getStudentById = async (req, res) => {
   }
 };
 
+// ---- admin ----
+export const deleteStudent = async (req, res) => {
+  try {
+    const student = await studentModel.findById(req.params.id);
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    await studentModel.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({
+      success: true,
+      message: "Student deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 
 
