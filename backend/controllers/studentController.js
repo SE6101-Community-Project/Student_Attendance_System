@@ -1026,4 +1026,13 @@ export const deleteStudent = async (req, res) => {
 };
 
 
+// ─────────────────────────────────────────────────────────────────────────────
+// @desc    Deactivate own student account
+// @route   PUT /api/student/deactivate
+// @access  Private (Student)
+// ─────────────────────────────────────────────────────────────────────────────
+export const deactivateStudentAccount = async (req, res) => {
+};
+
+
 
