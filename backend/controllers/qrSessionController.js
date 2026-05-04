@@ -300,3 +300,118 @@ export const closeQRSession = async (req, res) => {
     });
   }
 };
+
+
+
+
+// ─────────────────────────────────────────
+// @desc    Verify QR Code (Student scans)
+// @route   POST /api/qrsession/verify-qr
+// @access  Private (Student)
+// ─────────────────────────────────────────
+export const verifyQRCode = async (req, res) => {
+  try {
+    const { qrToken } = req.body;
+
+    if (!qrToken) {
+      return res.status(400).json({
+        success: false,
+        message: "QR token is required",
+      });
+    }
+
+    // Verify token
+    let decoded;
+    try {
+      decoded = verifyQRToken(qrToken);
+    } catch (err) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired QR code",
+      });
+    }
+
+    // Find session
+    const session = await qrSessionModel
+      .findOne({
+        sessionId: decoded.sessionId,
+        isActive: true,
+        isClosed: false,
+      })
+      .populate(
+        "course",
+        "courseCode courseName enrolledStudents attendanceThreshold",
+      )
+      .populate("lecturer", "name lecturerId");
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        message: "Session not found or already closed",
+      });
+    }
+
+    // Check session validity
+    if (!isSessionValid(session)) {
+      return res.status(400).json({
+        success: false,
+        message: "QR session has expired",
+      });
+    }
+
+    // Check enrollment - fix ObjectId comparison
+    const isEnrolled = session.course.enrolledStudents
+      .map((s) => s.toString())
+      .includes(req.user._id.toString());
+
+    if (!isEnrolled) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not enrolled in this course",
+      });
+    }
+
+    // Check if already marked
+    const existingAttendance = await (
+      await import("../models/attendanceModel.js")
+    ).default.findOne({
+      student: req.user._id,
+      session: session._id,
+    });
+
+    if (existingAttendance) {
+      return res.status(400).json({
+        success: false,
+        message: "Attendance already marked for this session",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "QR Code verified. Proceed to face verification.",
+      data: {
+        sessionDbId: session._id,
+        sessionId: session.sessionId,
+        course: {
+          _id: session.course._id,
+          courseCode: session.course.courseCode,
+          courseName: session.course.courseName,
+        },
+        lecturer: session.lecturer,
+        venue: session.venue,
+        location: session.location,
+        radiusInMeters: session.radiusInMeters,
+        lectureNumber: session.lectureNumber,
+        lectureTitle: session.lectureTitle,
+        qrVerified: true,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
