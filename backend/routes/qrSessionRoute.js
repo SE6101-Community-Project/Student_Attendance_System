@@ -26,5 +26,6 @@ router.post("/verify-qr", protect, studentOnly, verifyQRCode);
 
 // Shared routes
 router.get("/active/:courseId", protect, getActiveSession);
+router.get("/:sessionId", protect, lecturerOrAdmin, getSessionById);
 
 export default router;

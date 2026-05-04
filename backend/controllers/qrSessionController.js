@@ -452,3 +452,35 @@ export const getActiveSession = async (req, res) => {
     });
   }
 };
+
+
+// ─────────────────────────────────────────
+// @desc    Get session by ID
+// @route   GET /api/qrsession/:sessionId
+// @access  Private (Lecturer, Admin)
+// ─────────────────────────────────────────
+export const getSessionById = async (req, res) => {
+  try {
+    const session = await qrSessionModel
+      .findOne({ sessionId: req.params.sessionId })
+      .populate("lecturer", "name lecturerId email")
+      .populate("course", "courseCode courseName semester");
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        message: "Session not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: session,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
