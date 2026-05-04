@@ -999,5 +999,71 @@ export const getStudentById = async (req, res) => {
   }
 };
 
+// ---- admin ----
+export const deleteStudent = async (req, res) => {
+  try {
+    const student = await studentModel.findById(req.params.id);
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    await studentModel.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({
+      success: true,
+      message: "Student deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// @desc    Deactivate own student account
+// @route   PUT /api/student/deactivate
+// @access  Private (Student)
+// ─────────────────────────────────────────────────────────────────────────────
+export const deactivateStudentAccount = async (req, res) => {
+  try {
+    const student = await studentModel.findById(req.user._id);
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    if (!student.isActive) {
+      return res.status(400).json({
+        success: false,
+        message: "Account is already deactivated",
+      });
+    }
+
+    student.isActive = false;
+    await student.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Account deactivated successfully",
+    });
+  } catch (error) {
+    console.error("[deactivateStudentAccount] Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Internal server error",
+    });
+  }
+};
+
 
 
