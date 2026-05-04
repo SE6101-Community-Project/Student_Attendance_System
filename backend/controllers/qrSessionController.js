@@ -415,3 +415,40 @@ export const verifyQRCode = async (req, res) => {
 };
 
 
+
+
+// ─────────────────────────────────────────
+// @desc    Get active session for a course
+// @route   GET /api/qrsession/active/:courseId
+// @access  Private
+// ─────────────────────────────────────────
+export const getActiveSession = async (req, res) => {
+  try {
+    const session = await qrSessionModel
+      .findOne({
+        course: req.params.courseId,
+        isActive: true,
+        isClosed: false,
+        qrValidUntil: { $gt: new Date() },
+      })
+      .populate("lecturer", "name lecturerId")
+      .populate("course", "courseCode courseName");
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        message: "No active session found for this course",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: session,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

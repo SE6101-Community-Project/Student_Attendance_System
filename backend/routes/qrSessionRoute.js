@@ -24,4 +24,7 @@ router.put("/close/:sessionId", protect, lecturerOnly, closeQRSession);
 // Student routes
 router.post("/verify-qr", protect, studentOnly, verifyQRCode);
 
+// Shared routes
+router.get("/active/:courseId", protect, getActiveSession);
+
 export default router;
