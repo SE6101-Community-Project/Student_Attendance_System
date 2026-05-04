@@ -244,3 +244,59 @@ export const getLecturerSessions = async (req, res) => {
   }
 };
 
+
+
+// ─────────────────────────────────────────
+// @desc    Close QR Session
+// @route   PUT /api/qrsession/close/:sessionId
+// @access  Private (Lecturer)
+// ─────────────────────────────────────────
+export const closeQRSession = async (req, res) => {
+  try {
+    const session = await qrSessionModel.findOne({
+      sessionId: req.params.sessionId,
+    });
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        message: "Session not found",
+      });
+    }
+
+    // Already closed
+    if (session.isClosed) {
+      return res.status(400).json({
+        success: false,
+        message: "Session is already closed",
+      });
+    }
+
+    // Check lecturer owns this session
+    if (session.lecturer.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to close this session",
+      });
+    }
+
+    session.isActive = false;
+    session.isClosed = true;
+    await session.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Session closed successfully",
+      data: {
+        sessionId: session.sessionId,
+        isClosed: session.isClosed,
+        closedAt: new Date(),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
