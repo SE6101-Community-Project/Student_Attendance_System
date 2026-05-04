@@ -53,7 +53,6 @@ export const createQRSession = async (req, res) => {
       });
     }
 
-    // Fix: convert ObjectIds to strings for comparison
     const isAssigned = course.lecturers
       .map((l) => l.toString())
       .includes(req.user._id.toString());
@@ -93,7 +92,6 @@ export const createQRSession = async (req, res) => {
       .substr(2, 9)
       .toUpperCase()}`;
 
-    // Generate QR token
     const qrToken = generateQRToken({
       sessionId,
       courseId: courseId.toString(),
@@ -103,10 +101,8 @@ export const createQRSession = async (req, res) => {
       duration: `${validDuration}m`,
     });
 
-    // Generate QR image
     const qrCodeImage = await generateQRCodeImage(qrToken);
 
-    // Create session
     const session = await qrSessionModel.create({
       sessionId,
       qrCode: qrToken,
@@ -118,7 +114,7 @@ export const createQRSession = async (req, res) => {
       venue,
       location: {
         type: "Point",
-        coordinates: locationCoordinates, // [longitude, latitude]
+        coordinates: locationCoordinates,
         address: venue,
       },
       radiusInMeters: radiusInMeters || 100,
@@ -133,7 +129,7 @@ export const createQRSession = async (req, res) => {
     await course.save();
 
     // Notify enrolled students
-    if (course.enrolledStudents && course.enrolledStudents.length > 0) {
+    if (course.enrolledStudents?.length > 0) {
       try {
         const studentIds = course.enrolledStudents.map((s) => s._id);
         await notifySessionCreated(
@@ -145,6 +141,29 @@ export const createQRSession = async (req, res) => {
       } catch (notifError) {
         console.log("Notification failed:", notifError.message);
       }
+    }
+
+    // ── Auto-close after endTime ──
+    const msUntilEnd = new Date(endTime).getTime() - Date.now();
+    if (msUntilEnd > 0) {
+      setTimeout(async () => {
+        try {
+          const stillOpen = await qrSessionModel.findOne({
+            sessionId: session.sessionId,
+            isClosed: false,
+          });
+          if (stillOpen) {
+            stillOpen.isActive = false;
+            stillOpen.isClosed = true;
+            await stillOpen.save();
+            console.log(
+              `[AutoClose] Session ${session.sessionId} auto-closed`,
+            );
+          }
+        } catch (err) {
+          console.log("[AutoClose] Error:", err.message);
+        }
+      }, msUntilEnd);
     }
 
     res.status(201).json({
@@ -175,4 +194,53 @@ export const createQRSession = async (req, res) => {
   }
 };
 
+// ─────────────────────────────────────────
+// @desc    Get lecturer's sessions
+// @route   GET /api/qrsession/my-sessions
+// @access  Private (Lecturer)
+// ─────────────────────────────────────────
+export const getLecturerSessions = async (req, res) => {
+  try {
+
+    const { courseId, isActive, isClosed, page = 1, limit = 10 } = req.query;
+
+    const filter = { lecturer: req.user._id };
+    if (courseId) filter.course = courseId;
+    if (isActive !== undefined) filter.isActive = isActive === "true";
+    if (isClosed !== undefined) filter.isClosed = isClosed === "true";
+
+    const allSessions = await qrSessionModel.find({});
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const [sessions, total] = await Promise.all([
+      qrSessionModel
+        .find(filter)
+        .populate("course", "courseCode courseName")
+        .select("-qrCode -qrCodeImage")
+        .skip(skip)
+        .limit(parseInt(limit))
+        .sort({ createdAt: -1 }),
+      qrSessionModel.countDocuments(filter),
+    ]);
+
+
+    res.status(200).json({
+      success: true,
+      data: sessions,
+      pagination: {
+        total,
+        page: parseInt(page),
+        pages: Math.ceil(total / parseInt(limit)),
+        limit: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    console.log('getLecturerSessions ERROR:', error.message);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
