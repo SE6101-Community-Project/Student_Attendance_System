@@ -172,3 +172,58 @@ export const loginLecturer = async (req, res) => {
     });
   }
 };
+
+
+// ─────────────────────────────────────────
+// @desc    Verify lecturer email
+// @route   POST /api/lecturer/verify-email
+// @access  Public
+// ─────────────────────────────────────────
+export const verifyLecturerEmail = async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      // Show error page in browser with link to open app
+      return res.status(400).send(getVerificationHTML(
+        'error',
+        'Verification Failed',
+        'Verification token is missing. Please check your email and click the correct link.',
+        null
+      ));
+    }
+
+    const lecturer = await lecturerModel.findOne({
+      verificationToken: token,
+      verificationTokenExpire: { $gt: Date.now() },
+    });
+
+    if (!lecturer) {
+      return res.status(400).send(getVerificationHTML(
+        'expired',
+        'Link Expired',
+        'This verification link is invalid or has expired. Please request a new verification email from the app.',
+        null
+      ));
+    }
+
+    lecturer.isVerified = true;
+    lecturer.verificationToken = undefined;
+    lecturer.verificationTokenExpire = undefined;
+    await lecturer.save();
+
+    return res.status(200).send(getVerificationHTML(
+      'success',
+      'Email Verified Successfully',
+      `Your email ${lecturer.email} has been verified. Your account is now active.`,
+      lecturer.email
+    ));
+  } catch (error) {
+    return res.status(500).send(getVerificationHTML(
+      'error',
+      'Something Went Wrong',
+      'An error occurred during verification. Please try again later.',
+      null
+    ));
+  }
+};
