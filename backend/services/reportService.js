@@ -136,3 +136,55 @@ export const generateCourseFinalReport = async (courseId) => {
     throw new Error("Failed to generate course report: " + error.message);
   }
 };
+
+
+// Generate Mahapola eligibility report
+export const generateMahapolaReport = async (courseId) => {
+  try {
+    const course = await courseModel
+      .findById(courseId)
+      .populate("enrolledStudents");
+
+    const eligible = [];
+    const notEligible = [];
+
+    for (const student of course.enrolledStudents) {
+      const stats = await calculateAttendanceStats(student._id, courseId);
+
+      const reportData = {
+        studentId: student.studentId,
+        name: student.name,
+        email: student.email,
+        batch: student.batch,
+        percentage: stats.percentage,
+        sessionsAttended: stats.attended,
+        totalSessions: stats.totalSessions,
+      };
+
+      if (stats.isEligible) {
+        eligible.push(reportData);
+      } else {
+        notEligible.push(reportData);
+      }
+    }
+
+    return {
+      course: {
+        courseCode: course.courseCode,
+        courseName: course.courseName,
+      },
+      threshold: course.attendanceThreshold,
+      eligible: {
+        count: eligible.length,
+        students: eligible,
+      },
+      notEligible: {
+        count: notEligible.length,
+        students: notEligible,
+      },
+      generatedAt: new Date(),
+    };
+  } catch (error) {
+    throw new Error("Failed to generate Mahapola report: " + error.message);
+  }
+};
