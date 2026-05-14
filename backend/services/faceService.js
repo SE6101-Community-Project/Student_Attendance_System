@@ -146,3 +146,15 @@ export const calculateGPSDistance = (lat1, lon1, lat2, lon2) => {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c; // Distance in meters
 };
+
+
+// Verify GPS location
+export const verifyLocation = (studentLat, studentLon, venueLat, venueLon, radiusInMeters) => {
+  const distance = calculateGPSDistance(studentLat, studentLon, venueLat, venueLon);
+
+  return {
+    isWithinRange: distance <= radiusInMeters,
+    distance: Math.round(distance),
+    radiusAllowed: radiusInMeters,
+  };
+};
