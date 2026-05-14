@@ -127,3 +127,35 @@ export const getAllCourses = async (req, res) => {
     });
   }
 };
+
+
+// ─────────────────────────────────────────
+// @desc    Get course by ID
+// @route   GET /api/course/:id
+// @access  Private
+// ─────────────────────────────────────────
+export const getCourseById = async (req, res) => {
+  try {
+    const course = await courseModel
+      .findById(req.params.id)
+      .populate("lecturers", "name lecturerId email department designation")
+      .populate("enrolledStudents", "studentId name email batch");
+
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: course,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
