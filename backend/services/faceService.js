@@ -100,3 +100,32 @@ export const verifyFace = async (liveImageBase64, storedEncoding) => {
     };
   }
 };
+
+
+// Detect face — quality pre-check only
+export const detectFace = async (imageBase64) => {
+  try {
+    const response = await axios.post(
+      `${FACE_SERVICE_URL}/detect-face`,
+      { image: imageBase64 },
+      { timeout: 40_000 },
+    );
+
+    return {
+      success: true,
+      faceDetected: response.data.face_detected,
+      faceCount: response.data.face_count,
+      quality: response.data.quality,
+    };
+  } catch (error) {
+    const msg =
+      error.response?.data?.message || "Face detection failed";
+    console.error("[detectFace] Error:", msg);
+    return {
+      success: false,
+      faceDetected: false,
+      faceCount: 0,
+      message: msg,
+    };
+  }
+};
