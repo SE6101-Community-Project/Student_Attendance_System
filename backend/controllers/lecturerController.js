@@ -357,3 +357,65 @@ function getVerificationHTML(status, title, message, email) {
     </html>
   `;
 }
+
+
+// ─────────────────────────────────────────
+// @desc    Forgot password
+// @route   POST /api/lecturer/forgot-password
+// @access  Public
+// ─────────────────────────────────────────
+export const forgotLecturerPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+
+    const lecturer = await lecturerModel.findOne({ email });
+
+    if (!lecturer) {
+      return res.status(404).json({
+        success: false,
+        message: "No account found with this email",
+      });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    lecturer.resetPasswordToken = hashedToken;
+    lecturer.resetPasswordExpire = new Date(Date.now() + 10 * 60 * 1000);
+    await lecturer.save();
+
+    try {
+      await sendPasswordResetEmail(email, lecturer.name, resetToken);
+    } catch (emailError) {
+      console.log(emailError);      
+      lecturer.resetPasswordToken = undefined;
+      lecturer.resetPasswordExpire = undefined;
+      await lecturer.save();
+
+      return res.status(500).json({
+        success: false,
+        message: "Email could not be sent",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset email sent",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
