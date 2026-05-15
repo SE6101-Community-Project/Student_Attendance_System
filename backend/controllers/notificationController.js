@@ -122,3 +122,27 @@ export const getSentNotifications = async (req, res) => {
         });
     }
 };
+
+export const markAllNotificationsAsRead = async (req, res) => {
+  try {
+    const roleMap = {
+      student: "Student",
+      lecturer: "Lecturer",
+      Admin: "Admin",
+      SuperAdmin: "Admin",
+      Moderator: "Admin",
+    };
+
+    await notificationModel.markAllAsRead(req.user._id, roleMap[req.role]);
+
+    res.status(200).json({
+      success: true,
+      message: "All notifications marked as read",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

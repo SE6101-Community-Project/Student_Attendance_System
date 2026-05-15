@@ -1,7 +1,8 @@
 import express from "express";
 import {
     getMyNotifications,
-    getSentNotifications
+    getSentNotifications,
+    markAllNotificationsAsRead
 } from "../controllers/notificationController.js";
 import {
     protect,
@@ -14,3 +15,4 @@ const router = express.Router();
 
 router.get("/my-notifications", protect, getMyNotifications);
 router.get("/sent", protect, lecturerOnly, getSentNotifications);
+router.put("/mark-all-read", protect, markAllNotificationsAsRead);
