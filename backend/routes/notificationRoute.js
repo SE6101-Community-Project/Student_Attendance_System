@@ -16,3 +16,4 @@ const router = express.Router();
 router.get("/my-notifications", protect, getMyNotifications);
 router.get("/sent", protect, lecturerOnly, getSentNotifications);
 router.put("/mark-all-read", protect, markAllNotificationsAsRead);
+router.delete("/cleanup", protect, adminOnly, cleanupOldNotifications);

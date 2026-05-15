@@ -146,3 +146,20 @@ export const markAllNotificationsAsRead = async (req, res) => {
     });
   }
 };
+
+export const cleanupOldNotifications = async (req, res) => {
+  try {
+    const result = await notificationModel.deleteOldNotifications();
+
+    res.status(200).json({
+      success: true,
+      message: "Old notifications cleaned up",
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
