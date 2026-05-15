@@ -484,3 +484,62 @@ export const sendPasswordResetOTP = async (req, res) => {
     });
   }
 };
+
+
+// ─────────────────────────────────────────
+// @desc    Verify OTP
+// @route   POST /api/student/verify-otp
+// @access  Public
+// ─────────────────────────────────────────
+export const verifyPasswordResetOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and OTP are required",
+      });
+    }
+
+    const hashedOTP = crypto
+      .createHash("sha256")
+      .update(otp)
+      .digest("hex");
+
+    const lecturer = await lecturerModel.findOne({
+      email,
+      resetPasswordToken: hashedOTP,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!lecturer) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP",
+      });
+    }
+
+    // Generate a temporary reset token for the password reset step
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const hashedResetToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    lecturer.resetPasswordToken = hashedResetToken;
+    lecturer.resetPasswordExpire = new Date(Date.now() + 5 * 60 * 1000); // 5 min
+    await lecturer.save();
+
+    res.status(200).json({
+      success: true,
+      message: "OTP verified successfully",
+      resetToken: resetToken, // Send to frontend for reset-password step
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
