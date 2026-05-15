@@ -419,3 +419,68 @@ export const forgotLecturerPassword = async (req, res) => {
     });
   }
 };
+
+
+// ─────────────────────────────────────────
+// @desc    Send OTP for password reset
+// @route   POST /api/lecturer/send-otp
+// @access  Public
+// ─────────────────────────────────────────
+export const sendPasswordResetOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+
+    const lecturer = await lecturerModel.findOne({ email });
+
+    if (!lecturer) {
+      return res.status(404).json({
+        success: false,
+        message: "No account found with this email",
+      });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Hash and store OTP
+    const hashedOTP = crypto
+      .createHash("sha256")
+      .update(otp)
+      .digest("hex");
+
+    lecturer.resetPasswordToken = hashedOTP;
+    lecturer.resetPasswordExpire = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+    await lecturer.save();
+
+    // Send OTP via email
+    try {
+      await sendOTPEmail(email, lecturer.name, otp);
+    } catch (emailError) {
+      console.error("EMAIL ERROR:", emailError)
+      lecturer.resetPasswordExpire = null;
+      await lecturer.save();
+
+      return res.status(500).json({
+        success: false,
+        message: "Email could not be sent",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "OTP sent to your email",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
