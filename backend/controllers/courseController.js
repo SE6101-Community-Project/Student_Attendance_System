@@ -330,3 +330,59 @@ export const enrollStudentInCourse = async (req, res) => {
     });
   }
 };
+
+
+// ─────────────────────────────────────────
+// @desc    Bulk enroll students
+// @route   PUT /api/course/:id/bulk-enroll
+// @access  Private (Admin)
+// ─────────────────────────────────────────
+export const bulkEnrollStudents = async (req, res) => {
+  try {
+    const { studentIds } = req.body;
+
+    if (!studentIds || !Array.isArray(studentIds) || studentIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Student IDs array is required",
+      });
+    }
+
+    const course = await courseModel.findById(req.params.id);
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found",
+      });
+    }
+
+    const existingIds = course.enrolledStudents.map((s) => s.toString());
+    const newStudentIds = studentIds.filter(
+      (id) => !existingIds.includes(id.toString()),
+    );
+
+    if (newStudentIds.length > 0) {
+      course.enrolledStudents.push(...newStudentIds);
+      await course.save();
+
+      await studentModel.updateMany(
+        { _id: { $in: newStudentIds } },
+        { $addToSet: { courses: course._id } },
+      );
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `${newStudentIds.length} students enrolled successfully`,
+      data: {
+        enrolledCount: newStudentIds.length,
+        skippedCount: studentIds.length - newStudentIds.length,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
