@@ -625,4 +625,53 @@ export const getLecturerProfile = async (req, res) => {
 };
 
 
+// ─────────────────────────────────────────
+// @desc    Update lecturer profile
+// @route   PUT /api/lecturer/profile
+// @access  Private (Lecturer)
+// ─────────────────────────────────────────
+export const updateLecturerProfile = async (req, res) => {
+  try {
+    const { name, mobile, profileImage, department, designation } = req.body;
+
+    const lecturer = await lecturerModel.findById(req.user._id);
+
+    if (!lecturer) {
+      return res.status(404).json({
+        success: false,
+        message: "Lecturer not found",
+      });
+    }
+
+    if (name) lecturer.name = name;
+    if (mobile) lecturer.mobile = mobile;
+    if (profileImage) lecturer.profileImage = profileImage;
+    if (department) lecturer.department = department;
+    if (designation) lecturer.designation = designation;
+
+    const updated = await lecturer.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: {
+        _id: updated._id,
+        lecturerId: updated.lecturerId,
+        name: updated.name,
+        email: updated.email,
+        mobile: updated.mobile,
+        profileImage: updated.profileImage,
+        department: updated.department,
+        designation: updated.designation,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
 
