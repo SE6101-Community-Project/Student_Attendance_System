@@ -592,3 +592,37 @@ export const resetLecturerPassword = async (req, res) => {
     });
   }
 };
+
+
+// ─────────────────────────────────────────
+// @desc    Get lecturer profile
+// @route   GET /api/lecturer/profile
+// @access  Private (Lecturer)
+// ─────────────────────────────────────────
+export const getLecturerProfile = async (req, res) => {
+  try {
+    const lecturer = await lecturerModel
+      .findById(req.user._id)
+      .populate("courses", "courseCode courseName semester credits");
+
+    if (!lecturer) {
+      return res.status(404).json({
+        success: false,
+        message: "Lecturer not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: lecturer,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+
