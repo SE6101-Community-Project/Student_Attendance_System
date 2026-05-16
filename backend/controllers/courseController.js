@@ -440,3 +440,32 @@ export const getMyCourses = async (req, res) => {
     });
   }
 };
+
+
+// ─────────────────────────────────────────
+// @desc    Get enrolled courses (Student)
+// @route   GET /api/course/my-enrolled
+// @access  Private (Student)
+// ─────────────────────────────────────────
+export const getMyEnrolledCourses = async (req, res) => {
+  try {
+    const courses = await courseModel
+      .find({
+        enrolledStudents: req.user._id,
+        isActive: true,
+      })
+      .populate("lecturers", "name lecturerId designation")
+      .sort({ semester: 1 });
+
+    res.status(200).json({
+      success: true,
+      data: courses,
+      total: courses.length,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
