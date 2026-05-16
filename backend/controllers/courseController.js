@@ -159,3 +159,37 @@ export const getCourseById = async (req, res) => {
     });
   }
 };
+
+
+// ─────────────────────────────────────────
+// @desc    Update course
+// @route   PUT /api/course/:id
+// @access  Private (Admin)
+// ─────────────────────────────────────────
+export const updateCourse = async (req, res) => {
+  try {
+    const course = await courseModel.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true },
+    );
+
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Course updated successfully",
+      data: course,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
