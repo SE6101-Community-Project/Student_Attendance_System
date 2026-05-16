@@ -543,3 +543,52 @@ export const verifyPasswordResetOTP = async (req, res) => {
     });
   }
 };
+
+
+// ─────────────────────────────────────────
+// @desc    Reset password
+// @route   POST /api/lecturer/reset-password
+// @access  Public
+// ─────────────────────────────────────────
+export const resetLecturerPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Token and new password are required",
+      });
+    }
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const lecturer = await lecturerModel.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!lecturer) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired reset token",
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    lecturer.password = await bcrypt.hash(newPassword, salt);
+    lecturer.resetPasswordToken = undefined;
+    lecturer.resetPasswordExpire = undefined;
+    await lecturer.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset successfully. Please login.",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
