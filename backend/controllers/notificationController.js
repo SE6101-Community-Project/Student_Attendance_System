@@ -227,3 +227,145 @@ export const deleteNotification = async (req, res) => {
     });
   }
 };
+
+export const sendBulkNotification = async (req, res) => {
+  try {
+    const {
+      title,
+      message,
+      type = "general",
+      priority = "medium",
+      recipientType, // "my-students" | "all-students" | "custom"
+      recipientIds, // used when recipientType = "custom"
+      courseId, // used when recipientType = "course-students"
+    } = req.body;
+
+    if (!title || !message) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide title and message",
+      });
+    }
+
+    let recipients = [];
+
+    if (req.role === "lecturer") {
+      if (recipientType === "course-students" && courseId) {
+        // Send to students enrolled in a specific course
+        const course = await courseModel
+          .findById(courseId)
+          .populate("enrolledStudents", "_id");
+
+        if (!course) {
+          return res.status(404).json({
+            success: false,
+            message: "Course not found",
+          });
+        }
+
+        // Verify lecturer teaches this course
+        const isAssigned = course.lecturers
+          .map((l) => l.toString())
+          .includes(req.user._id.toString());
+
+        if (!isAssigned) {
+          return res.status(403).json({
+            success: false,
+            message: "You are not assigned to this course",
+          });
+        }
+
+        recipients = course.enrolledStudents.map((s) => ({
+          id: s._id,
+          model: "Student",
+        }));
+      } else if (recipientType === "my-students") {
+        // Send to ALL students in ALL lecturer's courses
+        const courses = await courseModel
+          .find({ lecturers: req.user._id })
+          .populate("enrolledStudents", "_id");
+
+        const studentSet = new Set();
+        courses.forEach((c) =>
+          c.enrolledStudents.forEach((s) => studentSet.add(s._id.toString())),
+        );
+
+        recipients = [...studentSet].map((id) => ({
+          id,
+          model: "Student",
+        }));
+      } else if (recipientType === "specific-student" && recipientIds?.length > 0) {
+        // Send to specific student(s) — verify they belong to lecturer's courses
+        const lecturerCourses = await courseModel
+          .find({ lecturers: req.user._id })
+          .populate("enrolledStudents", "_id");
+
+        const allowedStudentIds = new Set();
+        lecturerCourses.forEach((c) =>
+          c.enrolledStudents.forEach((s) =>
+            allowedStudentIds.add(s._id.toString()),
+          ),
+        );
+
+        // Only allow students that are actually in lecturer's courses
+        const validIds = recipientIds.filter((id) => allowedStudentIds.has(id));
+
+        if (validIds.length === 0) {
+          return res.status(403).json({
+            success: false,
+            message: "None of the selected students are in your courses",
+          });
+        }
+
+        recipients = validIds.map((id) => ({ id, model: "Student" }));
+      }
+    } else {
+      // Admin — use provided recipientIds
+      if (!recipientIds || recipientIds.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Please provide recipients",
+        });
+      }
+      recipients = recipientIds.map((r) => ({
+        id: r.id,
+        model: r.model,
+      }));
+    }
+
+    if (recipients.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No recipients found",
+      });
+    }
+
+    // Build notifications
+    const notifications = recipients.map((r) => ({
+      recipient: r.id,
+      recipientModel: r.model,
+      type,
+      title,
+      message,
+      priority,
+      metadata: {
+        sentBy: req.user._id,
+        senderName: req.user.name,
+        senderRole: req.role,
+      },
+    }));
+
+    await notificationModel.insertMany(notifications);
+
+    res.status(200).json({
+      success: true,
+      message: `Notification sent to ${recipients.length} recipient(s)`,
+      data: { recipientCount: recipients.length },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
