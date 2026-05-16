@@ -718,3 +718,80 @@ export const changeLecturerPassword = async (req, res) => {
     });
   }
 };
+
+
+// ─────────────────────────────────────────
+// @desc    Get all lecturers
+// @route   GET /api/lecturer/all
+// @access  Private (Lecturer/Admin)
+// ─────────────────────────────────────────
+export const getAllLecturers = async (req, res) => {
+  try {
+    const {
+      department,
+      isActive,
+      isVerified,
+      search,
+      page  = 1,
+      limit = 20,
+    } = req.query;
+
+    const filter = {};
+    if (department) filter.department = department;
+    if (isActive  !== undefined) filter.isActive  = isActive  === 'true';
+    if (isVerified !== undefined) filter.isVerified = isVerified === 'true';
+
+    if (search) {
+      filter.$or = [
+        { name:       { $regex: search, $options: 'i' } },
+        { email:      { $regex: search, $options: 'i' } },
+        { lecturerId: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const [lecturers, total] = await Promise.all([
+      lecturerModel
+        .find(filter)
+        .select('-password -verificationToken -resetPasswordToken -verificationTokenExpire -resetPasswordExpire')
+        .populate('courses', 'courseCode courseName')
+        .skip(skip)
+        .limit(parseInt(limit))
+        .sort({ createdAt: -1 }),
+      lecturerModel.countDocuments(filter),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: lecturers,
+      pagination: {
+        total,
+        page:  parseInt(page),
+        pages: Math.ceil(total / parseInt(limit)),
+        limit: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+export const getLecturerById = async (req, res) => {
+  try {
+    const lecturer = await lecturerModel
+      .findById(req.params.id)
+      .select('-password -verificationToken -resetPasswordToken -verificationTokenExpire -resetPasswordExpire')
+      .populate('courses', 'courseCode courseName');
+
+    if (!lecturer) {
+      return res.status(404).json({ success: false, message: 'Lecturer not found' });
+    }
+
+    res.status(200).json({ success: true, data: lecturer });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
