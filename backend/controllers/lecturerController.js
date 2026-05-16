@@ -674,4 +674,47 @@ export const updateLecturerProfile = async (req, res) => {
 };
 
 
+// ─────────────────────────────────────────
+// @desc    Change password
+// @route   PUT /api/lecturer/change-password
+// @access  Private (Lecturer)
+// ─────────────────────────────────────────
+export const changeLecturerPassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
 
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide current and new password",
+      });
+    }
+
+    const lecturer = await lecturerModel
+      .findById(req.user._id)
+      .select("+password");
+
+    const isMatch = await bcrypt.compare(currentPassword, lecturer.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    lecturer.password = await bcrypt.hash(newPassword, salt);
+    await lecturer.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
