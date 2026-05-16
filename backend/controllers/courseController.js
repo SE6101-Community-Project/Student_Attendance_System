@@ -276,3 +276,57 @@ export const assignLecturerToCourse = async (req, res) => {
     });
   }
 };
+
+
+// ─────────────────────────────────────────
+// @desc    Enroll student in course
+// @route   PUT /api/course/:id/enroll-student
+// @access  Private (Admin)
+// ─────────────────────────────────────────
+export const enrollStudentInCourse = async (req, res) => {
+  try {
+    const { studentId } = req.body;
+
+    const course = await courseModel.findById(req.params.id);
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found",
+      });
+    }
+
+    const student = await studentModel.findById(studentId);
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    if (
+      !course.enrolledStudents
+        .map((s) => s.toString())
+        .includes(studentId.toString())
+    ) {
+      course.enrolledStudents.push(studentId);
+      await course.save();
+    }
+
+    if (
+      !student.courses.map((c) => c.toString()).includes(course._id.toString())
+    ) {
+      student.courses.push(course._id);
+      await student.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `${student.name} enrolled in ${course.courseCode} successfully`,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
