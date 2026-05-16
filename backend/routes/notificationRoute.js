@@ -2,13 +2,16 @@ import express from "express";
 import {
     getMyNotifications,
     getSentNotifications,
-    markAllNotificationsAsRead
+    markAllNotificationsAsRead,
+    cleanupOldNotifications,
+    markNotificationAsRead
 } from "../controllers/notificationController.js";
 import {
     protect,
     adminOnly,
     lecturerOrAdmin,
-    lecturerOnly
+    lecturerOnly,
+
 } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -17,3 +20,4 @@ router.get("/my-notifications", protect, getMyNotifications);
 router.get("/sent", protect, lecturerOnly, getSentNotifications);
 router.put("/mark-all-read", protect, markAllNotificationsAsRead);
 router.delete("/cleanup", protect, adminOnly, cleanupOldNotifications);
+router.put("/:id/read", protect, markNotificationAsRead);

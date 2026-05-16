@@ -163,3 +163,35 @@ export const cleanupOldNotifications = async (req, res) => {
     });
   }
 };
+
+export const markNotificationAsRead = async (req, res) => {
+  try {
+    const notification = await notificationModel.findById(req.params.id);
+
+    if (!notification) {
+      return res.status(404).json({
+        success: false,
+        message: "Notification not found",
+      });
+    }
+
+    if (notification.recipient.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized",
+      });
+    }
+
+    await notification.markAsRead();
+
+    res.status(200).json({
+      success: true,
+      message: "Notification marked as read",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
