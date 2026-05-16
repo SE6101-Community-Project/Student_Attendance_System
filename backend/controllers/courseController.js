@@ -193,3 +193,34 @@ export const updateCourse = async (req, res) => {
     });
   }
 };
+
+
+// ─────────────────────────────────────────
+// @desc    Delete course
+// @route   DELETE /api/course/:id
+// @access  Private (Admin)
+// ─────────────────────────────────────────
+export const deleteCourse = async (req, res) => {
+  try {
+    const course = await courseModel.findByIdAndDelete(req.params.id);
+
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Course deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
