@@ -795,3 +795,32 @@ export const getLecturerById = async (req, res) => {
   }
 };
 
+// ─────────────────────────────────────────
+// @desc    Delete lecturer (Admin)
+// @route   DELETE /api/lecturer/:id
+// @access  Private (Admin)
+// ─────────────────────────────────────────
+export const deleteLecturer = async (req, res) => {
+  try {
+    const lecturer = await lecturerModel.findById(req.params.id);
+
+    if (!lecturer) {
+      return res.status(404).json({
+        success: false,
+        message: "Lecturer not found",
+      });
+    }
+
+    await lecturerModel.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({
+      success: true,
+      message: "Lecturer deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
