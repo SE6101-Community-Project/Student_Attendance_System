@@ -4,7 +4,8 @@ import {
     getSentNotifications,
     markAllNotificationsAsRead,
     cleanupOldNotifications,
-    markNotificationAsRead
+    markNotificationAsRead,
+    deleteNotification
 } from "../controllers/notificationController.js";
 import {
     protect,
@@ -21,3 +22,4 @@ router.get("/sent", protect, lecturerOnly, getSentNotifications);
 router.put("/mark-all-read", protect, markAllNotificationsAsRead);
 router.delete("/cleanup", protect, adminOnly, cleanupOldNotifications);
 router.put("/:id/read", protect, markNotificationAsRead);
+router.delete("/:id", protect, deleteNotification);
