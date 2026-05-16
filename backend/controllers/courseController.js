@@ -386,3 +386,57 @@ export const bulkEnrollStudents = async (req, res) => {
     });
   }
 };
+
+
+// ─────────────────────────────────────────
+// @desc    Get my courses (Lecturer)
+// @route   GET /api/course/my-courses
+// @access  Private (Lecturer)
+// ─────────────────────────────────────────
+// pass 
+export const getMyCourses = async (req, res) => {
+  const lecturerId = req.user._id;
+
+  try {
+
+    const { isActive, academicYear, batch } = req.query;
+    const filter = { lecturers: lecturerId };
+
+    if (isActive !== undefined) 
+      filter.isActive = isActive === "true";
+    if (academicYear) 
+      filter.academicYear = academicYear;
+    if (batch) 
+      filter.batch = batch;
+
+    const lecturerExists = await lecturerModel.findById(lecturerId);
+
+    const allCourses = await courseModel.find({});
+
+    const courses = await courseModel
+      .find(filter)
+      .populate("lecturers", "name email designation")
+      .sort({ semester: 1, createdAt: -1 });
+
+    const allStudentIds = new Set();
+
+    courses.forEach((course) => {
+      course.enrolledStudents.forEach((id) => {
+        allStudentIds.add(id.toString());
+      });
+    });
+
+    res.status(200).json({
+      success: true,
+      data: courses,
+      total: courses.length,
+      uniqueStudentCount: allStudentIds.size,
+    });
+  } catch (error) {
+    console.log('getMyCourses ERROR:', error.message);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
