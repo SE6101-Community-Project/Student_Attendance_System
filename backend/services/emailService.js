@@ -124,3 +124,30 @@ export const sendLowAttendanceWarning = async (
 
   await transporter.sendMail(mailOptions);
 };
+
+// Send attendance confirmation
+export const sendAttendanceConfirmation = async (email, name, courseCode, date) => {
+  const mailOptions = {
+    from: `"Attendance System" <${process.env.SMTP_FROM}>`,
+    to: email,
+    subject: `Attendance Confirmed - ${courseCode}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #27ae60;">Attendance Confirmed</h2>
+        <p>Dear ${name},</p>
+        <p>Your attendance has been successfully recorded.</p>
+        <div style="background-color: #d4edda; padding: 15px; border-radius: 4px; margin: 15px 0;">
+          <p><strong>Course:</strong> ${courseCode}</p>
+          <p><strong>Date:</strong> ${new Date(date).toLocaleDateString()}</p>
+          <p><strong>Status:</strong> Present ✓</p>
+        </div>
+        <hr/>
+        <p style="color: #7f8c8d; font-size: 12px;">
+          Sabaragamuwa University of Sri Lanka - Attendance System
+        </p>
+      </div>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
