@@ -151,3 +151,33 @@ export const sendAttendanceConfirmation = async (email, name, courseCode, date) 
 
   await transporter.sendMail(mailOptions);
 };
+
+// Send OTP email
+export const sendOTPEmail = async (email, name, otp) => {
+  const mailOptions = {
+    from: `"SUSL - Attendance System" <${process.env.SMTP_FROM}>`,
+    to: email,
+    subject: "Password Reset OTP - Attendance System",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #2c3e50;">Password Reset OTP</h2>
+        <p>Dear ${name ? name : 'user'},</p>
+        <p>Your verification code is:</p>
+        <div style="background-color: #f8f9fa; padding: 20px; text-align: center; 
+                    border-radius: 8px; margin: 20px 0;">
+          <h1 style="color: #00113a; letter-spacing: 8px; font-size: 36px; margin: 0;">
+            ${otp}
+          </h1>
+        </div>
+        <p>This code expires in <strong>10 minutes</strong>.</p>
+        <p>If you did not request this, please ignore this email.</p>
+        <hr/>
+        <p style="color: #7f8c8d; font-size: 12px;">
+          Sabaragamuwa University of Sri Lanka - Attendance System
+        </p>
+      </div>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
