@@ -92,3 +92,35 @@ export const sendPasswordResetEmail = async (email, name, token) => {
 
   await transporter.sendMail(mailOptions);
 };
+
+// Send low attendance warning
+export const sendLowAttendanceWarning = async (
+  email,
+  name,
+  courseCode,
+  percentage
+) => {
+  const mailOptions = {
+    from: `"SUSL - Attendance System" <${process.env.SMTP_FROM}>`,
+    to: email,
+    subject: `Low Attendance Warning - ${courseCode}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #f39c12;">Low Attendance Warning</h2>
+        <p>Dear ${name},</p>
+        <p>Your attendance for <strong>${courseCode}</strong> has fallen below the required threshold.</p>
+        <div style="background-color: #fff3cd; padding: 15px; border-radius: 4px; margin: 15px 0;">
+          <p><strong>Current Attendance:</strong> ${percentage}%</p>
+          <p><strong>Required Minimum:</strong> 80%</p>
+        </div>
+        <p>Please attend upcoming lectures to improve your attendance.</p>
+        <hr/>
+        <p style="color: #7f8c8d; font-size: 12px;">
+          Sabaragamuwa University of Sri Lanka - Attendance System
+        </p>
+      </div>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
