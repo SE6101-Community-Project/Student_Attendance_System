@@ -224,3 +224,55 @@ export const deleteCourse = async (req, res) => {
 };
 
 
+// ─────────────────────────────────────────
+// @desc    Assign lecturer to course
+// @route   PUT /api/course/:id/assign-lecturer
+// @access  Private (Admin)
+// ─────────────────────────────────────────
+export const assignLecturerToCourse = async (req, res) => {
+  try {
+    const { lecturerId } = req.body;
+
+    const course = await courseModel.findById(req.params.id);
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found",
+      });
+    }
+
+    const lecturer = await lecturerModel.findById(lecturerId);
+    if (!lecturer) {
+      return res.status(404).json({
+        success: false,
+        message: "Lecturer not found",
+      });
+    }
+
+    // Add to course if not already there
+    if (
+      !course.lecturers.map((l) => l.toString()).includes(lecturerId.toString())
+    ) {
+      course.lecturers.push(lecturerId);
+      await course.save();
+    }
+
+    // Add to lecturer if not already there
+    if (
+      !lecturer.courses.map((c) => c.toString()).includes(course._id.toString())
+    ) {
+      lecturer.courses.push(course._id);
+      await lecturer.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `${lecturer.name} assigned to ${course.courseCode} successfully`,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
