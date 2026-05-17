@@ -151,8 +151,96 @@ export const markAttendance = async (req, res) => {
       });
     }
 
-    
-      
+    // ── All Verifications Passed ──
+    const lateCheck = checkLateStatus(session.startTime, new Date());
+
+    const attendanceId =
+      "ATT_" +
+      Date.now() +
+      "_" +
+      Math.random().toString(36).substr(2, 9).toUpperCase();
+
+    const attendance = await attendanceModel.create({
+      attendanceId,
+      student: req.user._id,
+      session: session._id,
+      course: populatedSession.course._id,
+      lecturer: populatedSession.lecturer._id,
+      date: new Date(),
+      status: lateCheck.isLate ? "late" : "present",
+      verificationSteps: {
+        qrScanned: {
+          status: true,
+          timestamp: new Date(),
+          qrData: session.sessionId,
+        },
+        faceVerified: {
+          status: true,
+          timestamp: new Date(),
+          confidence: faceResult.confidence,
+          matchDistance: faceResult.distance,
+        },
+        locationVerified: {
+          status: true,
+          timestamp: new Date(),
+          studentLocation: {
+            type: "Point",
+            coordinates: [studentLongitude, studentLatitude],
+          },
+          distanceFromVenue: locationCheck.distance,
+          isWithinRange: true,
+        },
+      },
+      allVerificationsPassed: true,
+      markedAt: new Date(),
+      isLate: lateCheck.isLate,
+      lateByMinutes: lateCheck.lateByMinutes,
+    });
+
+    // Notifications
+    try {
+      await notifyAttendanceMarked(req.user._id, courseCode, session._id);
+    } catch (notifError) {
+      console.log("Notification failed:", notifError.message);
+    }
+
+    const stats = await calculateAttendanceStats(
+      req.user._id,
+      populatedSession.course._id,
+    );
+
+    if (!stats.isEligible) {
+      try {
+        await notifyLowAttendance(req.user._id, courseCode, stats.percentage);
+      } catch (notifError) {
+        console.log("Low attendance notification failed:", notifError.message);
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      message: lateCheck.isLate
+        ? `Marked as LATE (${lateCheck.lateByMinutes} mins late)`
+        : "Attendance marked successfully",
+      data: {
+        attendanceId: attendance.attendanceId,
+        status: attendance.status,
+        course: courseCode,
+        lectureNumber: session.lectureNumber,
+        markedAt: attendance.markedAt,
+        isLate: lateCheck.isLate,
+        lateByMinutes: lateCheck.lateByMinutes,
+        attendancePercentage: stats.percentage,
+        faceConfidence: faceResult.confidence,
+        verificationSteps: {
+          qrScanned: true,
+          faceVerified: true,
+          locationVerified: true,
+        },
+      },
+    });
+
+          
   } catch (error) {
     res.status(500).json({
       success: false,
