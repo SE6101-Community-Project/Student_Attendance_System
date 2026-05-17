@@ -124,6 +124,32 @@ export const markAttendance = async (req, res) => {
         confidence: faceResult.confidence,
       });
     }
+    // ── Step 3: Location Verification ──
+    const venueCoords = session.location.coordinates;
+
+    const locationCheck = verifyLocation(
+      studentLatitude,
+      studentLongitude,
+      venueCoords[1],
+      venueCoords[0],
+      session.radiusInMeters,
+    );
+
+    if (!locationCheck.isWithinRange) {
+      try {
+        await notifyLocationVerificationFailed(req.user._id, courseCode);
+      } catch (notifError) {
+        console.log("Notification failed:", notifError.message);
+      }
+
+      return res.status(400).json({
+        success: false,
+        message: `You are ${locationCheck.distance}m away. Must be within ${session.radiusInMeters}m.`,
+        step: "location",
+        distance: locationCheck.distance,
+        allowedRadius: session.radiusInMeters,
+      });
+    }
 
     
       
