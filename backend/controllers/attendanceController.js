@@ -328,3 +328,39 @@ export const getAttendanceBySession = async (req, res) => {
     });
   }
 };
+
+// ─────────────────────────────────────────
+// @desc    Get student attendance by course
+// @route   GET /api/attendance/student/course/:courseId
+// @access  Private (Student)
+// ─────────────────────────────────────────
+export const getStudentAttendanceByCourse = async (req, res) => {
+  try {
+    const stats = await calculateAttendanceStats(
+      req.user._id,
+      req.params.courseId,
+    );
+
+    // Get detailed records
+    const records = await attendanceModel
+      .find({
+        student: req.user._id,
+        course: req.params.courseId,
+      })
+      .populate("session", "lectureNumber lectureTitle startTime venue")
+      .sort({ date: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        statistics: stats,
+        records,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
