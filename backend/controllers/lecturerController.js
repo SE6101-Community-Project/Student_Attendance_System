@@ -357,3 +357,470 @@ function getVerificationHTML(status, title, message, email) {
     </html>
   `;
 }
+
+
+// ─────────────────────────────────────────
+// @desc    Forgot password
+// @route   POST /api/lecturer/forgot-password
+// @access  Public
+// ─────────────────────────────────────────
+export const forgotLecturerPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+
+    const lecturer = await lecturerModel.findOne({ email });
+
+    if (!lecturer) {
+      return res.status(404).json({
+        success: false,
+        message: "No account found with this email",
+      });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    lecturer.resetPasswordToken = hashedToken;
+    lecturer.resetPasswordExpire = new Date(Date.now() + 10 * 60 * 1000);
+    await lecturer.save();
+
+    try {
+      await sendPasswordResetEmail(email, lecturer.name, resetToken);
+    } catch (emailError) {
+      console.log(emailError);      
+      lecturer.resetPasswordToken = undefined;
+      lecturer.resetPasswordExpire = undefined;
+      await lecturer.save();
+
+      return res.status(500).json({
+        success: false,
+        message: "Email could not be sent",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset email sent",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+// ─────────────────────────────────────────
+// @desc    Send OTP for password reset
+// @route   POST /api/lecturer/send-otp
+// @access  Public
+// ─────────────────────────────────────────
+export const sendPasswordResetOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+
+    const lecturer = await lecturerModel.findOne({ email });
+
+    if (!lecturer) {
+      return res.status(404).json({
+        success: false,
+        message: "No account found with this email",
+      });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Hash and store OTP
+    const hashedOTP = crypto
+      .createHash("sha256")
+      .update(otp)
+      .digest("hex");
+
+    lecturer.resetPasswordToken = hashedOTP;
+    lecturer.resetPasswordExpire = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+    await lecturer.save();
+
+    // Send OTP via email
+    try {
+      await sendOTPEmail(email, lecturer.name, otp);
+    } catch (emailError) {
+      console.error("EMAIL ERROR:", emailError)
+      lecturer.resetPasswordExpire = null;
+      await lecturer.save();
+
+      return res.status(500).json({
+        success: false,
+        message: "Email could not be sent",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "OTP sent to your email",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+// ─────────────────────────────────────────
+// @desc    Verify OTP
+// @route   POST /api/student/verify-otp
+// @access  Public
+// ─────────────────────────────────────────
+export const verifyPasswordResetOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and OTP are required",
+      });
+    }
+
+    const hashedOTP = crypto
+      .createHash("sha256")
+      .update(otp)
+      .digest("hex");
+
+    const lecturer = await lecturerModel.findOne({
+      email,
+      resetPasswordToken: hashedOTP,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!lecturer) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP",
+      });
+    }
+
+    // Generate a temporary reset token for the password reset step
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const hashedResetToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    lecturer.resetPasswordToken = hashedResetToken;
+    lecturer.resetPasswordExpire = new Date(Date.now() + 5 * 60 * 1000); // 5 min
+    await lecturer.save();
+
+    res.status(200).json({
+      success: true,
+      message: "OTP verified successfully",
+      resetToken: resetToken, // Send to frontend for reset-password step
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+// ─────────────────────────────────────────
+// @desc    Reset password
+// @route   POST /api/lecturer/reset-password
+// @access  Public
+// ─────────────────────────────────────────
+export const resetLecturerPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Token and new password are required",
+      });
+    }
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const lecturer = await lecturerModel.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!lecturer) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired reset token",
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    lecturer.password = await bcrypt.hash(newPassword, salt);
+    lecturer.resetPasswordToken = undefined;
+    lecturer.resetPasswordExpire = undefined;
+    await lecturer.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset successfully. Please login.",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+// ─────────────────────────────────────────
+// @desc    Get lecturer profile
+// @route   GET /api/lecturer/profile
+// @access  Private (Lecturer)
+// ─────────────────────────────────────────
+export const getLecturerProfile = async (req, res) => {
+  try {
+    const lecturer = await lecturerModel
+      .findById(req.user._id)
+      .populate("courses", "courseCode courseName semester credits");
+
+    if (!lecturer) {
+      return res.status(404).json({
+        success: false,
+        message: "Lecturer not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: lecturer,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+// ─────────────────────────────────────────
+// @desc    Update lecturer profile
+// @route   PUT /api/lecturer/profile
+// @access  Private (Lecturer)
+// ─────────────────────────────────────────
+export const updateLecturerProfile = async (req, res) => {
+  try {
+    const { name, mobile, profileImage, department, designation } = req.body;
+
+    const lecturer = await lecturerModel.findById(req.user._id);
+
+    if (!lecturer) {
+      return res.status(404).json({
+        success: false,
+        message: "Lecturer not found",
+      });
+    }
+
+    if (name) lecturer.name = name;
+    if (mobile) lecturer.mobile = mobile;
+    if (profileImage) lecturer.profileImage = profileImage;
+    if (department) lecturer.department = department;
+    if (designation) lecturer.designation = designation;
+
+    const updated = await lecturer.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: {
+        _id: updated._id,
+        lecturerId: updated.lecturerId,
+        name: updated.name,
+        email: updated.email,
+        mobile: updated.mobile,
+        profileImage: updated.profileImage,
+        department: updated.department,
+        designation: updated.designation,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+// ─────────────────────────────────────────
+// @desc    Change password
+// @route   PUT /api/lecturer/change-password
+// @access  Private (Lecturer)
+// ─────────────────────────────────────────
+export const changeLecturerPassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide current and new password",
+      });
+    }
+
+    const lecturer = await lecturerModel
+      .findById(req.user._id)
+      .select("+password");
+
+    const isMatch = await bcrypt.compare(currentPassword, lecturer.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    lecturer.password = await bcrypt.hash(newPassword, salt);
+    await lecturer.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+// ─────────────────────────────────────────
+// @desc    Get all lecturers
+// @route   GET /api/lecturer/all
+// @access  Private (Lecturer/Admin)
+// ─────────────────────────────────────────
+export const getAllLecturers = async (req, res) => {
+  try {
+    const {
+      department,
+      isActive,
+      isVerified,
+      search,
+      page  = 1,
+      limit = 20,
+    } = req.query;
+
+    const filter = {};
+    if (department) filter.department = department;
+    if (isActive  !== undefined) filter.isActive  = isActive  === 'true';
+    if (isVerified !== undefined) filter.isVerified = isVerified === 'true';
+
+    if (search) {
+      filter.$or = [
+        { name:       { $regex: search, $options: 'i' } },
+        { email:      { $regex: search, $options: 'i' } },
+        { lecturerId: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const [lecturers, total] = await Promise.all([
+      lecturerModel
+        .find(filter)
+        .select('-password -verificationToken -resetPasswordToken -verificationTokenExpire -resetPasswordExpire')
+        .populate('courses', 'courseCode courseName')
+        .skip(skip)
+        .limit(parseInt(limit))
+        .sort({ createdAt: -1 }),
+      lecturerModel.countDocuments(filter),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: lecturers,
+      pagination: {
+        total,
+        page:  parseInt(page),
+        pages: Math.ceil(total / parseInt(limit)),
+        limit: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+export const getLecturerById = async (req, res) => {
+  try {
+    const lecturer = await lecturerModel
+      .findById(req.params.id)
+      .select('-password -verificationToken -resetPasswordToken -verificationTokenExpire -resetPasswordExpire')
+      .populate('courses', 'courseCode courseName');
+
+    if (!lecturer) {
+      return res.status(404).json({ success: false, message: 'Lecturer not found' });
+    }
+
+    res.status(200).json({ success: true, data: lecturer });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ─────────────────────────────────────────
+// @desc    Delete lecturer (Admin)
+// @route   DELETE /api/lecturer/:id
+// @access  Private (Admin)
+// ─────────────────────────────────────────
+export const deleteLecturer = async (req, res) => {
+  try {
+    const lecturer = await lecturerModel.findById(req.params.id);
+
+    if (!lecturer) {
+      return res.status(404).json({
+        success: false,
+        message: "Lecturer not found",
+      });
+    }
+
+    await lecturerModel.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({
+      success: true,
+      message: "Lecturer deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
