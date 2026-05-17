@@ -39,3 +39,88 @@ export const getAttendanceSettings = async (req, res) => {
   }
 };
 
+// ─────────────────────────────────────────
+// @desc    Update lecturer attendance settings
+// @route   PUT /api/settings/attendance
+// @access  Private (Lecturer)
+// ─────────────────────────────────────────
+export const updateAttendanceSettings = async (req, res) => {
+  try {
+    const { gpsRangeMeters, lateThresholdMinutes, qrValidityMinutes } =
+      req.body;
+
+    // ── Validate ──
+    if (
+      gpsRangeMeters === undefined &&
+      lateThresholdMinutes === undefined &&
+      qrValidityMinutes === undefined
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide at least one setting to update',
+      });
+    }
+
+    if (gpsRangeMeters !== undefined) {
+      if (gpsRangeMeters < 10 || gpsRangeMeters > 1000) {
+        return res.status(400).json({
+          success: false,
+          message: 'GPS range must be between 10 and 1000 meters',
+        });
+      }
+    }
+
+    if (lateThresholdMinutes !== undefined) {
+      if (lateThresholdMinutes < 1 || lateThresholdMinutes > 60) {
+        return res.status(400).json({
+          success: false,
+          message: 'Late threshold must be between 1 and 60 minutes',
+        });
+      }
+    }
+
+    if (qrValidityMinutes !== undefined) {
+      if (qrValidityMinutes < 5 || qrValidityMinutes > 480) {
+        return res.status(400).json({
+          success: false,
+          message: 'QR validity must be between 5 and 480 minutes',
+        });
+      }
+    }
+
+     // ── Upsert ──
+    const updateData = {};
+    if (gpsRangeMeters !== undefined)
+      updateData.gpsRangeMeters = gpsRangeMeters;
+    if (lateThresholdMinutes !== undefined)
+      updateData.lateThresholdMinutes = lateThresholdMinutes;
+    if (qrValidityMinutes !== undefined)
+      updateData.qrValidityMinutes = qrValidityMinutes;
+
+    const settings = await settingsModel.findOneAndUpdate(
+      { lecturer: req.user._id },
+      { $set: updateData },
+      {
+        new: true,        // return updated doc
+        upsert: true,     // create if not exists
+        runValidators: true,
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Attendance settings updated successfully',
+      data: {
+        gpsRangeMeters: settings.gpsRangeMeters,
+        lateThresholdMinutes: settings.lateThresholdMinutes,
+        qrValidityMinutes: settings.qrValidityMinutes,
+        updatedAt: settings.updatedAt,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
