@@ -364,3 +364,25 @@ export const getStudentAttendanceByCourse = async (req, res) => {
     });
   }
 };
+
+
+// ─────────────────────────────────────────
+// @desc    Get course attendance report
+// @route   GET /api/attendance/report/course/:courseId
+// @access  Private (Lecturer, Admin)
+// ─────────────────────────────────────────
+export const getCourseAttendanceReport = async (req, res) => {
+  try {
+    const report = await generateCourseFinalReport(req.params.courseId);
+
+    res.status(200).json({
+      success: true,
+      data: report,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
