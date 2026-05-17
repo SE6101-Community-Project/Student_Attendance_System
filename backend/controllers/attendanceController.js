@@ -249,3 +249,82 @@ export const markAttendance = async (req, res) => {
     console.log(error);
   }
 };
+
+// ─────────────────────────────────────────
+// @desc    Get attendance by session
+// @route   GET /api/attendance/session/:sessionId
+// @access  Private (Lecturer, Admin)
+// ─────────────────────────────────────────
+// pass
+export const getAttendanceBySession = async (req, res) => {
+  try {
+    const session = await qrSessionModel.findOne({
+      sessionId: req.params.sessionId,
+    });
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        message: "Session not found",
+      });
+    }
+
+    const attendance = await attendanceModel
+      .find({ session: session._id })
+      .populate("student", "studentId name profileImage email batch")
+      .sort({ markedAt: 1 });
+
+    const course = await courseModel
+      .findById(session.course)
+      .populate("enrolledStudents", "studentId name profileImage email batch");
+
+    const isSessionLive = session.isActive && !session.isClosed;
+
+    const presentIds = attendance.map((a) => a.student._id.toString());
+
+    const absentStudents = isSessionLive
+      ? []
+      : course.enrolledStudents.filter(
+          (s) => !presentIds.includes(s._id.toString()),
+        );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        session: {
+          sessionId: session.sessionId,
+          lectureNumber: session.lectureNumber,
+          lectureTitle: session.lectureTitle,
+          venue: session.venue,
+          date: session.startTime,
+          isActive: session.isActive,
+          isClosed: session.isClosed,
+          courseCode: course.courseCode,
+          courseName: course.courseName,
+          courseId: course._id,
+        },
+        summary: {
+          totalEnrolled: course.enrolledStudents.length,
+          totalPresent: attendance.filter((a) => a.status === "present").length,
+          totalLate: attendance.filter((a) => a.status === "late").length,
+          totalAbsent: isSessionLive ? 0 : absentStudents.length,
+          attendanceRate:
+            course.enrolledStudents.length > 0
+              ? (
+                  (attendance.length / course.enrolledStudents.length) *
+                  100
+                ).toFixed(2)
+              : 0,
+        },
+        presentStudents: attendance,
+        absentStudents,
+        isSessionLive,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
