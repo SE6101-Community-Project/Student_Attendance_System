@@ -124,3 +124,39 @@ export const updateAttendanceSettings = async (req, res) => {
     });
   }
 };
+
+// ─────────────────────────────────────────
+// @desc    Reset to defaults
+// @route   DELETE /api/settings/attendance/reset
+// @access  Private (Lecturer)
+// ─────────────────────────────────────────
+export const resetAttendanceSettings = async (req, res) => {
+  try {
+    const settings = await settingsModel.findOneAndUpdate(
+      { lecturer: req.user._id },
+      {
+        $set: {
+          gpsRangeMeters: 100,
+          lateThresholdMinutes: 15,
+          qrValidityMinutes: 120,
+        },
+      },
+      { new: true, upsert: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Settings reset to defaults',
+      data: {
+        gpsRangeMeters: settings.gpsRangeMeters,
+        lateThresholdMinutes: settings.lateThresholdMinutes,
+        qrValidityMinutes: settings.qrValidityMinutes,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
