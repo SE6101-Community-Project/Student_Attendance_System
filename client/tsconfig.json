@@ -1,0 +1,21 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "nativewind-env.d.ts",
+    "src/constants/fonts.js",
+    "app/(screens)/(auth)/SplashScreen.jsx",
+    "app/index.jsx",
+    "app/(screens)/(auth)/LoginScreen.jsx",
+    "app/_layout.jsx"
+  ]
+}
