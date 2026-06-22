@@ -11,4 +11,19 @@ const api = axios.create({
   },
 });
 
+api.interceptors.request.use(
+  async (config) => {
+    try {
+      const token = await SecureStore.getItemAsync('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.warn('[api] Token retrieval error:', error.message);
+    }
+    return config;
+  },
+  (error) => Promise.reject(error),
+);
+
 export default api;
