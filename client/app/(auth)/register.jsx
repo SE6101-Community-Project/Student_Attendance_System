@@ -93,3 +93,275 @@ export default function RegisterScreen() {
 
   // ── Auth Context ──
   const { registerStudent } = useAuth();
+
+    // ── Animations ──
+  const fadeIn = useRef(new Animated.Value(0)).current;
+  const slideUp = useRef(new Animated.Value(30)).current;
+  const stepAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeIn, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideUp, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  // Animate step transitions
+  useEffect(() => {
+    stepAnim.setValue(0);
+    Animated.timing(stepAnim, {
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
+  }, [currentStep]);
+
+  const switchRole = (newRole) => {
+    if (newRole === role) return;
+    setRole(newRole);
+    setCurrentStep(1);
+    setError("");
+    setCapturedImage(null);
+    setFormData({
+      name: "",
+      studentId: "",
+      lecturerId: "",
+      email: "",
+      mobile: "",
+      department: "",
+      batch: "",
+      designation: "",
+      password: "",
+      confirmPassword: "",
+      imageBase64: null,
+    });
+
+    Animated.timing(toggleAnim, {
+      toValue: newRole === "lecturer" ? 1 : 0,
+      duration: 250,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const updateField = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (error) 
+      setError("");
+  };
+
+  const getBorderColor = (field) =>
+    focusedField === field ? "#775a19" : "#c5c6d2";
+  const getLabelColor = (field) =>
+    focusedField === field ? "#775a19" : "#444650";
+
+  // ══════════════════════════════════════
+  // VALIDATION
+  // ══════════════════════════════════════
+  const validateStep1 = () => {
+    if (!formData.name.trim()) {
+      setError("Please enter your full name");
+      return false;
+    }
+
+    if (role === "student") {
+      if (!formData.studentId.trim()) {
+        setError("Please enter your Student ID");
+        return false;
+      }
+      if (!formData.batch) {
+        setError("Please select your batch");
+        return false;
+      }
+    } else {
+      if (!formData.lecturerId.trim()) {
+        setError("Please enter your Lecturer ID");
+        return false;
+      }
+      if (!formData.designation) {
+        setError("Please select your designation");
+        return false;
+      }
+    }
+
+    if (!formData.email.trim()) {
+      setError("Please enter your email");
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email.trim())) {
+      setError("Please enter a valid email address");
+      return false;
+    }
+
+    if (!formData.mobile.trim()) {
+      setError("Please enter your mobile number");
+      return false;
+    }
+
+    if (!formData.department) {
+      setError("Please select your department");
+      return false;
+    }
+
+    return true;
+  };
+
+  const validateStep2Face = () => {
+    if (!capturedImage || !formData.imageBase64) {
+      setError("Please capture your face photo");
+      return false;
+    }
+    return true;
+  };
+
+  const validatePasswordStep = () => {
+    if (!formData.password.trim()) {
+      setError("Please enter a password");
+      return false;
+    }
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return false;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return false;
+    }
+    return true;
+  };
+
+  // ══════════════════════════════════════
+  // NAVIGATION
+  // ══════════════════════════════════════
+  const handleNext = () => {
+    setError("");
+
+    if (currentStep === 1) {
+      if (!validateStep1()) 
+        return;
+      setCurrentStep(2);
+    } else if (currentStep === 2 && role === "student") {
+      // Student step 2 = Face
+      if (!validateStep2Face()) 
+        return;
+      setCurrentStep(3);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+      setError("");
+    } else {
+      router.back();
+    }
+  };
+
+  // ══════════════════════════════════════
+  // CAMERA
+  // ══════════════════════════════════════
+  const handleCapture = async () => {
+    if (!cameraRef.current || !cameraReady) 
+      return;
+
+    try {
+      const photo = await cameraRef.current.takePictureAsync({
+        base64: true,
+        quality: 0.7,
+        exif: false,
+      });
+
+      setCapturedImage(photo.uri);
+      updateField("imageBase64", photo.base64);
+    } catch (err) {
+      console.log(err);
+      setError("Failed to capture photo. Please try again.");
+    }
+  };
+
+  const handleRetake = () => {
+    setCapturedImage(null);
+    updateField("imageBase64", null);
+  };
+
+  // ══════════════════════════════════════
+  // SUBMIT REGISTRATION
+  // ══════════════════════════════════════
+  const handleSubmit = async () => {
+    setError("");
+    if (!validatePasswordStep()) 
+      return;
+
+    setLoading(true);
+
+    try {
+      if (role === "student") {
+        // ── Student Registration ──
+        const result = await registerStudent({
+          studentId: formData.studentId.trim(),
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          password: formData.password,
+          mobile: formData.mobile.trim(),
+          batch: formData.batch,
+          department: formData.department,
+          imageBase64: formData.imageBase64,
+        });
+
+        if (result.success) {
+          router.replace({
+            pathname: "/(auth)/verify-email",
+            params: { email: formData.email.trim() },
+          });
+        } else {
+          console.log(result.message);
+          setError(result.message || "Registration failed");
+          // Go back to relevant step on face errors
+          if (
+            result.step === "face_detection" ||
+            result.step === "face_encoding"
+          ) {
+            setCurrentStep(2);
+          }
+        }
+      } else {
+        // ── Lecturer Registration ──
+        const { default: api } = await import("@/src/api/axiosInstance");
+        const response = await api.post("/lecturer/register", {
+          lecturerId: formData.lecturerId.trim(),
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          password: formData.password,
+          mobile: formData.mobile.trim(),
+          department: formData.department,
+          designation: formData.designation,
+        });
+
+        if (response.data.success) {
+          router.replace({
+            pathname: "/(auth)/verify-email",
+            params: { email: formData.email.trim() },
+          });
+        } else {
+          console.log(response.data.message);
+          setError(response.data.message || "Registration failed");
+        }
+      }
+    } catch (err) {
+      setError(
+        err.response?.data?.message || err.message || "Registration failed",
+      );
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
