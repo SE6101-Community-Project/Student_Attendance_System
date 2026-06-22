@@ -50,3 +50,46 @@ const DESIGNATIONS = [
   { label: "Visiting Lecturer", value: "Visiting Lecturer" },
   { label: "Instructor", value: "Instructor" },
 ];
+
+export default function RegisterScreen() {
+  // ── Role Toggle ──
+  const [role, setRole] = useState("student"); // 'student' | 'lecturer'
+  const toggleAnim = useRef(new Animated.Value(0)).current;
+
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = role === "student" ? 3 : 2;
+
+  // ── Form Data ──
+  const [formData, setFormData] = useState({
+    name: "",
+    studentId: "",
+    lecturerId: "",
+    email: "",
+    mobile: "",
+    department: "",
+    batch: "",
+    designation: "",
+    password: "",
+    confirmPassword: "",
+    imageBase64: null,
+  });
+
+  // ── UI State ──
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showDeptPicker, setShowDeptPicker] = useState(false);
+  const [showBatchPicker, setShowBatchPicker] = useState(false);
+  const [showDesignationPicker, setShowDesignationPicker] = useState(false);
+
+  // ── Camera State ──
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+  const [cameraReady, setCameraReady] = useState(false);
+  const [capturedImage, setCapturedImage] = useState(null);
+  const [cameraFacing, setCameraFacing] = useState("front");
+  const cameraRef = useRef(null);
+
+  // ── Auth Context ──
+  const { registerStudent } = useAuth();
