@@ -476,3 +476,202 @@ export default function RegisterScreen() {
       </View>
     );
   };
+
+   // ══════════════════════════════════════
+  // RENDER: STEP 1 — PERSONAL DETAILS
+  // ══════════════════════════════════════
+  const renderStep1 = () => (
+    <View style={styles.formCard}>
+      {/* Name */}
+      <View style={styles.inputGroup}>
+        <Text style={[styles.inputLabel, { color: getLabelColor("name") }]}>
+          FULL NAME
+        </Text>
+        <TextInput
+          style={[styles.input, { borderBottomColor: getBorderColor("name") }]}
+          placeholder="As it appears on your ID"
+          placeholderTextColor="rgba(197,198,210,0.7)"
+          value={formData.name}
+          onChangeText={(t) => updateField("name", t)}
+          onFocus={() => setFocusedField("name")}
+          onBlur={() => setFocusedField(null)}
+          autoCapitalize="words"
+        />
+      </View>
+
+      {/* Student ID or Lecturer ID */}
+      {role === "student" ? (
+        <View style={styles.inputGroup}>
+          <Text
+            style={[styles.inputLabel, { color: getLabelColor("studentId") }]}
+          >
+            STUDENT ID
+          </Text>
+          <TextInput
+            style={[
+              styles.input,
+              { borderBottomColor: getBorderColor("studentId") },
+            ]}
+            placeholder="21CSEXXXX"
+            placeholderTextColor="rgba(197,198,210,0.7)"
+            value={formData.studentId}
+            onChangeText={(t) => updateField("studentId", t)}
+            onFocus={() => setFocusedField("studentId")}
+            onBlur={() => setFocusedField(null)}
+            autoCapitalize="characters"
+          />
+        </View>
+      ) : (
+        <View style={styles.inputGroup}>
+          <Text
+            style={[styles.inputLabel, { color: getLabelColor("lecturerId") }]}
+          >
+            LECTURER ID
+          </Text>
+          <TextInput
+            style={[
+              styles.input,
+              { borderBottomColor: getBorderColor("lecturerId") },
+            ]}
+            placeholder="LEC-XXXX"
+            placeholderTextColor="rgba(197,198,210,0.7)"
+            value={formData.lecturerId}
+            onChangeText={(t) => updateField("lecturerId", t)}
+            onFocus={() => setFocusedField("lecturerId")}
+            onBlur={() => setFocusedField(null)}
+            autoCapitalize="characters"
+          />
+        </View>
+      )}
+
+      {/* Email */}
+      <View style={styles.inputGroup}>
+        <Text style={[styles.inputLabel, { color: getLabelColor("email") }]}>
+          EMAIL ADDRESS
+        </Text>
+        <TextInput
+          style={[styles.input, { borderBottomColor: getBorderColor("email") }]}
+          placeholder="youremail_pre@std.foc.sab.ac.lk"
+          placeholderTextColor="rgba(197,198,210,0.7)"
+          value={formData.email}
+          onChangeText={(t) => updateField("email", t)}
+          onFocus={() => setFocusedField("email")}
+          onBlur={() => setFocusedField(null)}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+      </View>
+
+      {/* Mobile */}
+      <View style={styles.inputGroup}>
+        <Text style={[styles.inputLabel, { color: getLabelColor("mobile") }]}>
+          MOBILE NUMBER
+        </Text>
+        <TextInput
+          style={[
+            styles.input,
+            { borderBottomColor: getBorderColor("mobile") },
+          ]}
+          placeholder="+94 7X XXX XXXX"
+          placeholderTextColor="rgba(197,198,210,0.7)"
+          value={formData.mobile}
+          onChangeText={(t) => updateField("mobile", t)}
+          onFocus={() => setFocusedField("mobile")}
+          onBlur={() => setFocusedField(null)}
+          keyboardType="phone-pad"
+        />
+      </View>
+
+      {/* Department Dropdown */}
+      <View style={styles.inputGroup}>
+        <Text
+          style={[styles.inputLabel, { color: getLabelColor("department") }]}
+        >
+          DEPARTMENT
+        </Text>
+        <TouchableOpacity
+          style={[
+            styles.dropdownTrigger,
+            { borderBottomColor: getBorderColor("department") },
+          ]}
+          onPress={() => setShowDeptPicker(true)}
+          activeOpacity={0.7}
+        >
+          <Text
+            style={[
+              styles.dropdownTriggerText,
+              !formData.department && styles.dropdownPlaceholder,
+            ]}
+          >
+            {formData.department || "Select your department"}
+          </Text>
+          <MaterialCommunityIcons
+            name="chevron-down"
+            size={20}
+            color="#757682"
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Batch (Student) or Designation (Lecturer) */}
+      {role === "student" ? (
+        <View style={styles.inputGroup}>
+          <Text style={[styles.inputLabel, { color: getLabelColor("batch") }]}>
+            BATCH / INTAKE YEAR
+          </Text>
+          <TouchableOpacity
+            style={[
+              styles.dropdownTrigger,
+              { borderBottomColor: getBorderColor("batch") },
+            ]}
+            onPress={() => setShowBatchPicker(true)}
+            activeOpacity={0.7}
+          >
+            <Text
+              style={[
+                styles.dropdownTriggerText,
+                !formData.batch && styles.dropdownPlaceholder,
+              ]}
+            >
+              {formData.batch ? `Batch ${formData.batch}` : "Select your batch"}
+            </Text>
+            <MaterialCommunityIcons
+              name="chevron-down"
+              size={20}
+              color="#757682"
+            />
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={styles.inputGroup}>
+          <Text
+            style={[styles.inputLabel, { color: getLabelColor("designation") }]}
+          >
+            DESIGNATION
+          </Text>
+          <TouchableOpacity
+            style={[
+              styles.dropdownTrigger,
+              { borderBottomColor: getBorderColor("designation") },
+            ]}
+            onPress={() => setShowDesignationPicker(true)}
+            activeOpacity={0.7}
+          >
+            <Text
+              style={[
+                styles.dropdownTriggerText,
+                !formData.designation && styles.dropdownPlaceholder,
+              ]}
+            >
+              {formData.designation || "Select designation"}
+            </Text>
+            <MaterialCommunityIcons
+              name="chevron-down"
+              size={20}
+              color="#757682"
+            />
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
