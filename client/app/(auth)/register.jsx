@@ -748,3 +748,122 @@ export default function RegisterScreen() {
             </View>
           </View>
         </View>
+
+         {/* Camera / Preview */}
+        <View style={styles.cameraCard}>
+          <View style={styles.cameraViewport}>
+            {capturedImage ? (
+              <Image
+                source={{ uri: capturedImage }}
+                style={styles.capturedPreview}
+              />
+            ) : (
+              <CameraView
+                ref={cameraRef}
+                style={styles.camera}
+                facing={cameraFacing}
+                onCameraReady={() => setCameraReady(true)}
+              />
+            )}
+
+            {/* Face Guide Overlay */}
+            {!capturedImage && (
+              <View style={styles.faceGuideOverlay}>
+                <View style={styles.faceGuideOval} />
+              </View>
+            )}
+
+            {/* Live Badge */}
+            {!capturedImage && (
+              <View style={styles.liveBadge}>
+                <View style={styles.liveDot} />
+                <Text style={styles.liveText}>LIVE</Text>
+              </View>
+            )}
+
+            {/* Captured Badge */}
+            {capturedImage && (
+              <View style={styles.capturedBadge}>
+                <MaterialCommunityIcons
+                  name="check-circle"
+                  size={14}
+                  color="#4CAF50"
+                />
+                <Text style={styles.capturedBadgeText}>CAPTURED</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Camera Actions */}
+          <View style={styles.cameraActions}>
+            <Text style={styles.cameraHint}>
+              {capturedImage
+                ? "Photo captured successfully"
+                : "Place your face within the frame"}
+            </Text>
+
+            <View style={styles.cameraButtons}>
+              {capturedImage ? (
+                <>
+                  <TouchableOpacity
+                    style={styles.retakeBtn}
+                    onPress={handleRetake}
+                    activeOpacity={0.85}
+                  >
+                    <MaterialCommunityIcons
+                      name="refresh"
+                      size={16}
+                      color="#00113a"
+                    />
+                    <Text style={styles.retakeBtnText}>RETAKE</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={styles.flipBtn}
+                    onPress={() =>
+                      setCameraFacing((f) => (f === "front" ? "back" : "front"))
+                    }
+                    activeOpacity={0.85}
+                  >
+                    <MaterialCommunityIcons
+                      name="camera-flip-outline"
+                      size={16}
+                      color="#00113a"
+                    />
+                    <Text style={styles.flipBtnText}>FLIP</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.captureBtn}
+                    onPress={handleCapture}
+                    activeOpacity={0.85}
+                  >
+                    <MaterialCommunityIcons
+                      name="camera"
+                      size={16}
+                      color="#ffffff"
+                    />
+                    <Text style={styles.captureBtnText}>CAPTURE IDENTITY</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          </View>
+        </View>
+
+        {/* Privacy Note */}
+        <View style={styles.privacyNote}>
+          <MaterialCommunityIcons
+            name="lock-outline"
+            size={12}
+            color="#757682"
+          />
+          <Text style={styles.privacyNoteText}>
+            ENCRYPTED BIOMETRIC DATA PROCESSING
+          </Text>
+        </View>
+      </View>
+    );
+  };
