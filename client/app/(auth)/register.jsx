@@ -675,3 +675,76 @@ export default function RegisterScreen() {
       )}
     </View>
   );
+
+   // ══════════════════════════════════════
+  // RENDER: STEP 2 — FACE CAPTURE (Student only)
+  // ══════════════════════════════════════
+  const renderStep2Face = () => {
+    if (!cameraPermission) 
+      return <ActivityIndicator color="#775a19" />;
+
+    if (!cameraPermission.granted) {
+      return (
+        <View style={styles.formCard}>
+          <View style={styles.cameraPermissionCard}>
+            <MaterialCommunityIcons
+              name="camera-off-outline"
+              size={48}
+              color="#775a19"
+            />
+            <Text style={styles.permissionTitle}>Camera Access Required</Text>
+            <Text style={styles.permissionText}>
+              We need camera access to capture your face photo for biometric
+              verification.
+            </Text>
+            <TouchableOpacity
+              style={styles.permissionBtn}
+              onPress={requestCameraPermission}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.permissionBtnText}>GRANT PERMISSION</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.faceStepContainer}>
+        {/* Instructions */}
+        <View style={styles.instructionsCard}>
+          <Text style={styles.instructionsTitle}>Instructions</Text>
+          <Text style={styles.instructionsText}>
+            Ensure you are in a well-lit environment. Remove glasses or hats.
+          </Text>
+          <View style={styles.instructionsList}>
+            <View style={styles.instructionItem}>
+              <MaterialCommunityIcons
+                name="white-balance-sunny"
+                size={16}
+                color="#775a19"
+              />
+              <Text style={styles.instructionItemText}>Avoid backlighting</Text>
+            </View>
+            <View style={styles.instructionItem}>
+              <MaterialCommunityIcons
+                name="face-recognition"
+                size={16}
+                color="#775a19"
+              />
+              <Text style={styles.instructionItemText}>
+                Remove glasses or hats
+              </Text>
+            </View>
+            <View style={styles.instructionItem}>
+              <MaterialCommunityIcons
+                name="crosshairs-gps"
+                size={16}
+                color="#775a19"
+              />
+              <Text style={styles.instructionItemText}>
+                Align face with guide
+              </Text>
+            </View>
+          </View>
+        </View>
