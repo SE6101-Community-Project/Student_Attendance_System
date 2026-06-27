@@ -365,3 +365,114 @@ export default function RegisterScreen() {
       setLoading(false);
     }
   };
+
+   // ══════════════════════════════════════
+  // STEP HEADERS
+  // ══════════════════════════════════════
+  const getStepInfo = () => {
+    if (role === "student") {
+      switch (currentStep) {
+        case 1:
+          return {
+            label: "IDENTITY & ENROLLMENT",
+            title: "Personal\nDetails",
+            progress: 33,
+          };
+        case 2:
+          return {
+            label: "IDENTIFICATION",
+            title: "Biometric\nVerification",
+            progress: 66,
+          };
+        case 3:
+          return {
+            label: "SECURITY PHASE",
+            title: "Secure Your\nArchive",
+            progress: 100,
+          };
+      }
+    } else {
+      switch (currentStep) {
+        case 1:
+          return {
+            label: "IDENTITY & ENROLLMENT",
+            title: "Personal\nDetails",
+            progress: 50,
+          };
+        case 2:
+          return {
+            label: "SECURITY PHASE",
+            title: "Secure Your\nArchive",
+            progress: 100,
+          };
+      }
+    }
+  };
+
+  const stepInfo = getStepInfo();
+
+  // ══════════════════════════════════════
+  // CUSTOM DROPDOWN
+  // ══════════════════════════════════════
+  const DropdownPicker = ({
+    visible,
+    options,
+    selectedValue,
+    onSelect,
+    onClose,
+  }) => {
+    if (!visible) 
+      return null;
+    return (
+      <View style={styles.dropdownOverlay}>
+        <TouchableOpacity
+          style={styles.dropdownBackdrop}
+          activeOpacity={1}
+          onPress={onClose}
+        />
+        <View style={styles.dropdownContainer}>
+          <View style={styles.dropdownHeader}>
+            <Text style={styles.dropdownHeaderText}>SELECT OPTION</Text>
+            <TouchableOpacity onPress={onClose}>
+              <MaterialCommunityIcons name="close" size={20} color="#444650" />
+            </TouchableOpacity>
+          </View>
+          <ScrollView style={styles.dropdownScroll} bounces={false}>
+            {options
+              .filter((o) => o.value !== "")
+              .map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[
+                    styles.dropdownItem,
+                    selectedValue === option.value && styles.dropdownItemActive,
+                  ]}
+                  onPress={() => {
+                    onSelect(option.value);
+                    onClose();
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      styles.dropdownItemText,
+                      selectedValue === option.value &&
+                        styles.dropdownItemTextActive,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                  {selectedValue === option.value && (
+                    <MaterialCommunityIcons
+                      name="check"
+                      size={18}
+                      color="#775a19"
+                    />
+                  )}
+                </TouchableOpacity>
+              ))}
+          </ScrollView>
+        </View>
+      </View>
+    );
+  };
