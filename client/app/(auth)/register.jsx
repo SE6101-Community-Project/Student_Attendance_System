@@ -1015,3 +1015,282 @@ export default function RegisterScreen() {
       </Text>
     </View>
   );
+
+   // ══════════════════════════════════════
+  // RENDER: CURRENT STEP CONTENT
+  // ══════════════════════════════════════
+  const renderCurrentStep = () => {
+    if (role === "student") {
+      switch (currentStep) {
+        case 1:
+          return renderStep1();
+        case 2:
+          return renderStep2Face();
+        case 3:
+          return renderPasswordStep();
+      }
+    } else {
+      switch (currentStep) {
+        case 1:
+          return renderStep1();
+        case 2:
+          return renderPasswordStep();
+      }
+    }
+  };
+
+  // Is this the final step?
+  const isFinalStep =
+    (role === "student" && currentStep === 3) ||
+    (role === "lecturer" && currentStep === 2);
+
+  // ══════════════════════════════════════
+  // MAIN RENDER
+  // ══════════════════════════════════════
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#f9f9f9" />
+
+      <SafeAreaView style={styles.safeArea}>
+        {/* ── Header ── */}
+        <View style={styles.headerBar}>
+          <TouchableOpacity
+            onPress={handleBack}
+            style={styles.backBtn}
+            activeOpacity={0.7}
+          >
+            <MaterialCommunityIcons
+              name="arrow-left"
+              size={24}
+              color="#00113a"
+            />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>
+            {role === "student" ? "Student" : "Lecturer"} Registration
+          </Text>
+          <Text style={styles.stepIndicatorHeader}>
+            Step {currentStep} of {totalSteps}
+          </Text>
+        </View>
+
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+        >
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <Animated.View
+              style={[
+                styles.mainContent,
+                {
+                  opacity: fadeIn,
+                  transform: [{ translateY: slideUp }],
+                },
+              ]}
+            >
+              {/* ── Role Toggle (Step 1 only) ── */}
+              {currentStep === 1 && (
+                <View style={styles.roleToggleContainer}>
+                  <Animated.View
+                    style={[
+                      styles.roleToggleIndicator,
+                      {
+                        left: toggleAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ["2%", "50%"],
+                        }),
+                      },
+                    ]}
+                  />
+                  <TouchableOpacity
+                    style={styles.roleToggleBtn}
+                    onPress={() => switchRole("student")}
+                    activeOpacity={0.7}
+                  >
+                    <MaterialCommunityIcons
+                      name="account-school-outline"
+                      size={14}
+                      color={role === "student" ? "#00113a" : "#757682"}
+                    />
+                    <Text
+                      style={[
+                        styles.roleToggleText,
+                        role === "student" && styles.roleToggleTextActive,
+                      ]}
+                    >
+                      STUDENT
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.roleToggleBtn}
+                    onPress={() => switchRole("lecturer")}
+                    activeOpacity={0.7}
+                  >
+                    <MaterialCommunityIcons
+                      name="human-male-board"
+                      size={14}
+                      color={role === "lecturer" ? "#00113a" : "#757682"}
+                    />
+                    <Text
+                      style={[
+                        styles.roleToggleText,
+                        role === "lecturer" && styles.roleToggleTextActive,
+                      ]}
+                    >
+                      LECTURER
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* ── Archival Header ── */}
+              <View style={styles.archivalHeader}>
+                <View style={styles.archivalAccent} />
+                <View>
+                  <Text style={styles.archivalLabel}>{stepInfo.label}</Text>
+                  <Text style={styles.archivalTitle}>{stepInfo.title}</Text>
+                </View>
+              </View>
+
+              {/* ── Progress Bar ── */}
+              <View style={styles.progressSection}>
+                <View style={styles.progressBarTrack}>
+                  <View
+                    style={[
+                      styles.progressBarFill,
+                      { width: `${stepInfo.progress}%` },
+                    ]}
+                  />
+                </View>
+                <View style={styles.progressDots}>
+                  {Array.from({ length: totalSteps }, (_, i) => (
+                    <View
+                      key={i}
+                      style={[
+                        styles.progressDot,
+                        i < currentStep && styles.progressDotActive,
+                      ]}
+                    />
+                  ))}
+                  <Text style={styles.progressText}>
+                    {String(currentStep).padStart(2, "0")} /{" "}
+                    {String(totalSteps).padStart(2, "0")}
+                  </Text>
+                </View>
+              </View>
+
+              {/* ── Error ── */}
+              {error ? (
+                <View style={styles.errorContainer}>
+                  <MaterialCommunityIcons
+                    name="alert-circle-outline"
+                    size={16}
+                    color="#ba1a1a"
+                  />
+                  <Text style={styles.errorText}>{error}</Text>
+                </View>
+              ) : null}
+
+              {/* ── Step Content ── */}
+              <Animated.View
+                style={{
+                  opacity: stepAnim,
+                  transform: [
+                    {
+                      translateX: stepAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [30, 0],
+                      }),
+                    },
+                  ],
+                }}
+              >
+                {renderCurrentStep()}
+              </Animated.View>
+
+              {/* ── Actions ── */}
+              <View style={styles.actionsSection}>
+                {isFinalStep ? (
+                  <TouchableOpacity
+                    style={[
+                      styles.submitBtn,
+                      loading && styles.submitBtnDisabled,
+                    ]}
+                    onPress={handleSubmit}
+                    activeOpacity={0.85}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <ActivityIndicator color="#ffffff" size="small" />
+                    ) : (
+                      <Text style={styles.submitBtnText}>
+                        COMPLETE ENROLLMENT
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.nextBtn}
+                    onPress={handleNext}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={styles.nextBtnText}>CONTINUE</Text>
+                    <MaterialCommunityIcons
+                      name="arrow-right"
+                      size={16}
+                      color="#ffffff"
+                    />
+                  </TouchableOpacity>
+                )}
+
+                {/* Login Link */}
+                <View style={styles.loginLinkRow}>
+                  <Text style={styles.loginLinkText}>
+                    Already have an account?
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => router.replace("/(auth)/login")}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.loginLinkAction}>LOGIN</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* ── Footer ── */}
+              <Text style={styles.footerCopyright}>
+                © SABARAGAMUWA UNIVERSITY OF SRI LANKA
+              </Text>
+            </Animated.View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+
+      {/* ── Dropdown Pickers ── */}
+      <DropdownPicker
+        visible={showDeptPicker}
+        options={DEPARTMENTS}
+        selectedValue={formData.department}
+        onSelect={(v) => updateField("department", v)}
+        onClose={() => setShowDeptPicker(false)}
+      />
+      <DropdownPicker
+        visible={showBatchPicker}
+        options={BATCHES}
+        selectedValue={formData.batch}
+        onSelect={(v) => updateField("batch", v)}
+        onClose={() => setShowBatchPicker(false)}
+      />
+      <DropdownPicker
+        visible={showDesignationPicker}
+        options={DESIGNATIONS}
+        selectedValue={formData.designation}
+        onSelect={(v) => updateField("designation", v)}
+        onClose={() => setShowDesignationPicker(false)}
+      />
+    </View>
+  );
+}
