@@ -1404,3 +1404,119 @@ const styles = StyleSheet.create({
     color: "#00113a",
   },
 
+   // ── Progress ──
+  progressSection: { marginBottom: 24 },
+  progressBarTrack: {
+    height: 2,
+    backgroundColor: "#e8e8e8",
+    borderRadius: 1,
+    overflow: "hidden",
+    marginBottom: 8,
+  },
+  progressBarFill: {
+    height: "100%",
+    backgroundColor: "#775a19",
+  },
+  progressDots: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  progressDot: {
+    width: 24,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: "#e8e8e8",
+  },
+  progressDotActive: {
+    backgroundColor: "#00113a",
+  },
+  progressText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 9,
+    letterSpacing: 3,
+    color: "#757682",
+    marginLeft: 8,
+  },
+
+  // ── Error ──
+  errorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#ffdad6",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    gap: 8,
+    marginBottom: 16,
+  },
+  errorText: {
+    fontFamily: "Manrope_600SemiBold",
+    fontSize: 12,
+    color: "#93000a",
+    flex: 1,
+  },
+
+  // ── Form Card ──
+  formCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    padding: 24,
+    shadowColor: "#00113a",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.04,
+    shadowRadius: 30,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: "rgba(232,232,232,0.3)",
+    gap: 28,
+  },
+
+  // ── Input ──
+  inputGroup: {},
+  inputLabel: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 9,
+    letterSpacing: 3,
+    color: "#444650",
+    marginBottom: 6,
+  },
+  input: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 16,
+    color: "#00113a",
+    borderBottomWidth: 2,
+    borderBottomColor: "#c5c6d2",
+    paddingVertical: 10,
+    paddingHorizontal: 0,
+  },
+  passwordRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  passwordInput: { flex: 1 },
+  eyeBtn: { paddingLeft: 12, paddingBottom: 4 },
+
+  // ── Strength ──
+  strengthRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+  strengthLabel: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 9,
+    letterSpacing: 2,
+    color: "#775a19",
+  },
+  strengthBars: { flexDirection: "row", gap: 3 },
+  strengthBar: {
+    width: 24,
+    height: 3,
+    borderRadius: 2,
+  },
+
+  
+
+
