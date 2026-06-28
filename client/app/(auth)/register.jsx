@@ -867,3 +867,151 @@ export default function RegisterScreen() {
       </View>
     );
   };
+
+   // ══════════════════════════════════════
+  // RENDER: PASSWORD STEP
+  // ══════════════════════════════════════
+  const renderPasswordStep = () => (
+    <View style={styles.formCard}>
+      {/* Password */}
+      <View style={styles.inputGroup}>
+        <Text style={[styles.inputLabel, { color: getLabelColor("password") }]}>
+          CREATE PASSWORD
+        </Text>
+        <View style={styles.passwordRow}>
+          <TextInput
+            style={[
+              styles.input,
+              styles.passwordInput,
+              { borderBottomColor: getBorderColor("password") },
+            ]}
+            placeholder="••••••••••••"
+            placeholderTextColor="rgba(197,198,210,0.7)"
+            value={formData.password}
+            onChangeText={(t) => updateField("password", t)}
+            onFocus={() => setFocusedField("password")}
+            onBlur={() => setFocusedField(null)}
+            secureTextEntry={!showPassword}
+            autoCapitalize="none"
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+            style={styles.eyeBtn}
+          >
+            <MaterialCommunityIcons
+              name={showPassword ? "eye-off-outline" : "eye-outline"}
+              size={20}
+              color="#757682"
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Password Strength */}
+        {formData.password.length > 0 && (
+          <View style={styles.strengthRow}>
+            <Text style={styles.strengthLabel}>
+              {formData.password.length >= 8
+                ? "STRONG ARCHIVAL KEY"
+                : formData.password.length >= 6
+                  ? "MODERATE KEY"
+                  : "WEAK KEY"}
+            </Text>
+            <View style={styles.strengthBars}>
+              {[1, 2, 3, 4].map((i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.strengthBar,
+                    {
+                      backgroundColor:
+                        formData.password.length >= i * 2
+                          ? "#775a19"
+                          : "#e8e8e8",
+                    },
+                  ]}
+                />
+              ))}
+            </View>
+          </View>
+        )}
+      </View>
+
+      {/* Confirm Password */}
+      <View style={styles.inputGroup}>
+        <Text
+          style={[
+            styles.inputLabel,
+            { color: getLabelColor("confirmPassword") },
+          ]}
+        >
+          CONFIRM PASSWORD
+        </Text>
+        <View style={styles.passwordRow}>
+          <TextInput
+            style={[
+              styles.input,
+              styles.passwordInput,
+              { borderBottomColor: getBorderColor("confirmPassword") },
+            ]}
+            placeholder="••••••••••••"
+            placeholderTextColor="rgba(197,198,210,0.7)"
+            value={formData.confirmPassword}
+            onChangeText={(t) => updateField("confirmPassword", t)}
+            onFocus={() => setFocusedField("confirmPassword")}
+            onBlur={() => setFocusedField(null)}
+            secureTextEntry={!showConfirmPassword}
+            autoCapitalize="none"
+          />
+          <TouchableOpacity
+            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+            style={styles.eyeBtn}
+          >
+            <MaterialCommunityIcons
+              name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
+              size={20}
+              color="#757682"
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Match indicator */}
+        {formData.confirmPassword.length > 0 && (
+          <View style={styles.matchRow}>
+            <MaterialCommunityIcons
+              name={
+                formData.password === formData.confirmPassword
+                  ? "check-circle-outline"
+                  : "close-circle-outline"
+              }
+              size={14}
+              color={
+                formData.password === formData.confirmPassword
+                  ? "#4CAF50"
+                  : "#ba1a1a"
+              }
+            />
+            <Text
+              style={[
+                styles.matchText,
+                {
+                  color:
+                    formData.password === formData.confirmPassword
+                      ? "#4CAF50"
+                      : "#ba1a1a",
+                },
+              ]}
+            >
+              {formData.password === formData.confirmPassword
+                ? "Passwords match"
+                : "Passwords do not match"}
+            </Text>
+          </View>
+        )}
+      </View>
+
+      {/* Agreement */}
+      <Text style={styles.agreementText}>
+        By completing enrollment, you agree to the Academic Code of Conduct
+      </Text>
+    </View>
+  );
