@@ -1517,6 +1517,103 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
 
-  
+   // ── Match ──
+  matchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 8,
+  },
+  matchText: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 11,
+  },
+
+  // ── Dropdown Trigger ──
+  dropdownTrigger: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderBottomWidth: 2,
+    borderBottomColor: "#c5c6d2",
+    paddingVertical: 12,
+  },
+  dropdownTriggerText: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 16,
+    color: "#00113a",
+    flex: 1,
+  },
+  dropdownPlaceholder: {
+    color: "rgba(197,198,210,0.7)",
+  },
+
+  // ── Dropdown Overlay ──
+  dropdownOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 999,
+    justifyContent: "flex-end",
+  },
+  dropdownBackdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  dropdownContainer: {
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    maxHeight: "50%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  dropdownHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  dropdownHeaderText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 10,
+    letterSpacing: 3,
+    color: "#444650",
+  },
+  dropdownScroll: { paddingHorizontal: 8 },
+  dropdownItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginVertical: 2,
+  },
+  dropdownItemActive: {
+    backgroundColor: "rgba(119,90,25,0.08)",
+  },
+  dropdownItemText: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 15,
+    color: "#00113a",
+  },
+  dropdownItemTextActive: {
+    fontFamily: "Manrope_700Bold",
+    color: "#775a19",
+  },
+
 
 
