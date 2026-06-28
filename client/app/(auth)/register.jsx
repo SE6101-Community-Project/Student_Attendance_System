@@ -1294,3 +1294,113 @@ export default function RegisterScreen() {
     </View>
   );
 }
+
+// ══════════════════════════════════════
+// STYLES
+// ══════════════════════════════════════
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#f9f9f9" },
+  safeArea: { flex: 1 },
+
+  // ── Header ──
+  headerBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(232,232,232,0.5)",
+  },
+  backBtn: { padding: 4, marginRight: 12 },
+  headerTitle: {
+    fontFamily: "Newsreader_400Regular",
+    fontSize: 18,
+    color: "#00113a",
+    flex: 1,
+  },
+  stepIndicatorHeader: {
+    fontFamily: "Manrope_600SemiBold",
+    fontSize: 10,
+    letterSpacing: 2,
+    color: "#757682",
+    textTransform: "uppercase",
+  },
+
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 48,
+  },
+  mainContent: { width: "100%" },
+
+  // ── Role Toggle ──
+  roleToggleContainer: {
+    flexDirection: "row",
+    backgroundColor: "#eeeeee",
+    borderRadius: 8,
+    padding: 4,
+    marginBottom: 28,
+    position: "relative",
+    height: 48,
+  },
+  roleToggleIndicator: {
+    position: "absolute",
+    top: 4,
+    bottom: 4,
+    width: "48%",
+    backgroundColor: "#ffffff",
+    borderRadius: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  roleToggleBtn: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+    zIndex: 1,
+  },
+  roleToggleText: {
+    fontFamily: "Manrope_600SemiBold",
+    fontSize: 11,
+    letterSpacing: 3,
+    color: "#757682",
+  },
+  roleToggleTextActive: {
+    fontFamily: "Manrope_700Bold",
+    color: "#00113a",
+  },
+
+  // ── Archival Header ──
+  archivalHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 16,
+    marginBottom: 20,
+  },
+  archivalAccent: {
+    width: 2,
+    height: 56,
+    backgroundColor: "#775a19",
+    marginTop: 4,
+  },
+  archivalLabel: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 9,
+    letterSpacing: 3,
+    color: "#775a19",
+    marginBottom: 6,
+  },
+  archivalTitle: {
+    fontFamily: "Newsreader_400Regular",
+    fontSize: 36,
+    lineHeight: 42,
+    color: "#00113a",
+  },
+
