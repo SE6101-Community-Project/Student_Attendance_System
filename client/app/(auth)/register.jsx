@@ -1853,4 +1853,88 @@ const styles = StyleSheet.create({
     color: "#ffffff",
   },
 
+  // ── Actions ──
+  actionsSection: {
+    marginTop: 32,
+    gap: 20,
+  },
+  nextBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    backgroundColor: "#002366",
+    paddingVertical: 20,
+    borderRadius: 4,
+    shadowColor: "#00113a",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 6,
+  },
+  nextBtnText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 11,
+    letterSpacing: 4,
+    color: "#ffffff",
+  },
+  submitBtn: {
+    backgroundColor: "#00113a",
+    paddingVertical: 20,
+    borderRadius: 4,
+    alignItems: "center",
+    shadowColor: "#00113a",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 6,
+  },
+  submitBtnDisabled: { opacity: 0.7 },
+  submitBtnText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 11,
+    letterSpacing: 4,
+    color: "#ffffff",
+  },
+
+  // ── Login Link ──
+  loginLinkRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+  },
+  loginLinkText: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 13,
+    color: "#444650",
+  },
+  loginLinkAction: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 13,
+    color: "#775a19",
+  },
+
+  // ── Agreement ──
+  agreementText: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 10,
+    letterSpacing: 1,
+    color: "#757682",
+    textAlign: "center",
+    textTransform: "uppercase",
+  },
+
+  // ── Footer ──
+  footerCopyright: {
+    fontFamily: "Manrope_600SemiBold",
+    fontSize: 7,
+    letterSpacing: 3,
+    color: "#757682",
+    textAlign: "center",
+    opacity: 0.3,
+    marginTop: 48,
+  },
+});
+
 
