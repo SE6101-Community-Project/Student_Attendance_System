@@ -33,3 +33,105 @@ export const AuthProvider = ({ children }) => {
       setInitialLoading(false);
     }
   };
+
+  // ── Student Login ──
+  const loginStudent = async (email, password) => {
+    setLoading(true);
+    try {
+      const response = await api.post('/student/login', { email, password });
+
+      if (response.data.success) {
+        const { token: newToken, data } = response.data;
+        
+        // Check if email is verified
+        if (!data.isVerified) {
+          return {
+            success: false,
+            notVerified: true,
+            email: data.email,
+            message: 'Please verify your email before logging in.',
+          };
+        }
+
+        // Verified — save session
+        setToken(newToken);
+        setUser(data);
+
+        setRole('student');
+
+        await SecureStore.setItemAsync('token', newToken);
+        await SecureStore.setItemAsync('user', JSON.stringify(data));
+        await SecureStore.setItemAsync('role', 'student');
+
+        router.replace('/(student)/(tabs)/dashboard');
+        return { success: true, message: response.data.message };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Login failed',
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Lecturer Login ──
+  const loginLecturer = async (email, password) => {
+    setLoading(true);
+    try {
+      const response = await api.post('/lecturer/login', { email, password });
+
+      if (response.data.success) {
+        const { token: newToken, data } = response.data;
+
+        setToken(newToken);
+        setUser(data);
+        setRole('lecturer');
+
+        await SecureStore.setItemAsync('token', newToken);
+        await SecureStore.setItemAsync('user', JSON.stringify(data));
+        await SecureStore.setItemAsync('role', 'lecturer');
+
+        router.replace('/(lecturer)/(tabs)/dashboard');
+        return { success: true, message: response.data.message };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Login failed',
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Register Student ──
+  const registerStudent = async (registrationData) => {
+    setLoading(true);
+    try {
+      const response = await api.post('/student/register', registrationData);
+
+      if (response.data.success) {
+        const { token: newToken, data } = response.data;
+
+        setToken(newToken);
+        setUser(data);
+        setRole('student');
+
+        await SecureStore.setItemAsync('token', newToken);
+        await SecureStore.setItemAsync('user', JSON.stringify(data));
+        await SecureStore.setItemAsync('role', 'student');
+
+        return { success: true, data };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Registration failed',
+        step: error.response?.data?.step,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
