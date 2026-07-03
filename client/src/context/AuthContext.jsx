@@ -135,3 +135,90 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
+
+   // ── Register Face ──
+  const registerFace = async (imageBase64) => {
+    setLoading(true);
+    try {
+      const response = await api.post('/student/register-face', {
+        imageBase64,
+      });
+
+      if (response.data.success) {
+        const updatedUser = { ...user, faceDataRegistered: true };
+        setUser(updatedUser);
+        await SecureStore.setItemAsync('user', JSON.stringify(updatedUser));
+      }
+
+      return {
+        success: response.data.success,
+        message: response.data.message,
+        data: response.data.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Face registration failed',
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Verify Face ──
+  const verifyFace = async (imageBase64) => {
+    try {
+      const response = await api.post('/student/verify-face', {
+        imageBase64,
+      });
+
+      return {
+        success: response.data.success,
+        data: response.data.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Face verification failed',
+      };
+    }
+  };
+
+  // ── Logout ──
+  const logout = async () => {
+    setToken(null);
+    setUser(null);
+    setRole(null);
+    await SecureStore.deleteItemAsync('token');
+    await SecureStore.deleteItemAsync('user');
+    await SecureStore.deleteItemAsync('role');
+    router.replace('/(auth)/login');
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        role,
+        loading,
+        initialLoading,
+        loginStudent,
+        loginLecturer,
+        registerStudent,
+        registerFace,
+        verifyFace,
+        logout,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context)
+    throw new Error('useAuth must be used within AuthProvider');
+  return context;
+};
