@@ -351,3 +351,103 @@ export default function LoginScreen() {
                     </Text>
                   </TouchableOpacity>
                 </View>
+
+                 {/* ── Error Banner ── */}
+                {error ? (
+                  <View style={styles.errorContainer}>
+                    <MaterialCommunityIcons
+                      name="alert-circle-outline"
+                      size={16}
+                      color="#ba1a1a"
+                    />
+                    <Text style={styles.errorText}>{error}</Text>
+                  </View>
+                ) : null}
+
+                {/* ── Form Fields ── */}
+                <Animated.View
+                  style={[
+                    styles.formSection,
+                    { opacity: formOpacity },
+                  ]}
+                >
+                  {activeTab === 'student' ? (
+                    <>
+                      <FloatingInput
+                        label="EMAIL ADDRESS"
+                        value={studentEmail}
+                        onChangeText={setStudentEmail}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                      />
+                      <FloatingInput
+                        label="SECURITY CREDENTIALS"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={!showPassword}
+                        showToggle
+                        showPassword={showPassword}
+                        onTogglePassword={() =>
+                          setShowPassword(!showPassword)
+                        }
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <FloatingInput
+                        label="STAFF UNIVERSITY EMAIL"
+                        value={lecturerEmail}
+                        onChangeText={setLecturerEmail}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                      />
+                      <FloatingInput
+                        label="SECURITY KEY"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={!showPassword}
+                        showToggle
+                        showPassword={showPassword}
+                        onTogglePassword={() =>
+                          setShowPassword(!showPassword)
+                        }
+                      />
+                    </>
+                  )}
+                </Animated.View>
+
+                {/* ── Utilities Row ── */}
+                <View style={styles.utilitiesRow}>
+                  <TouchableOpacity
+                    style={styles.rememberRow}
+                    onPress={() => setRememberMe(!rememberMe)}
+                    activeOpacity={0.7}
+                  >
+                    <View
+                      style={[
+                        styles.checkbox,
+                        rememberMe && styles.checkboxActive,
+                      ]}
+                    >
+                      {rememberMe && (
+                        <MaterialCommunityIcons
+                          name="check"
+                          size={11}
+                          color="#775a19"
+                        />
+                      )}
+                    </View>
+                    <Text style={styles.rememberText}>KEEP SESSION</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() =>
+                      router.push('/(auth)/forgot-password')
+                    }
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.forgotText}>
+                      CREDENTIAL RECOVERY
+                    </Text>
+                  </TouchableOpacity>
+                </View>
