@@ -240,3 +240,114 @@ export default function LoginScreen() {
     inputRange: [0, 1],
     outputRange: [4, (width - 96) / 2],
   });
+
+  return (
+    <View style={styles.container}>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="transparent"
+        translucent
+      />
+
+      {/* Background Blobs */}
+      <View style={styles.blobTopRight} />
+      <View style={styles.blobBottomLeft} />
+
+      <SafeAreaView style={styles.safeArea}>
+        <BlurView
+          intensity={80}
+          tint="light"
+          style={styles.header}
+        >
+          {/* Left: Icon + Title */}
+          <View style={styles.headerLeft}>
+            <MaterialCommunityIcons
+              name="bank"
+              size={26}
+              color="#00113a"
+            />
+            <Text style={styles.headerTitle}>The Academic Curator</Text>
+          </View>
+        </BlurView>
+
+        {/* ═══════════════════════════════════════
+            SCROLLABLE CONTENT
+        ═══════════════════════════════════════ */}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <Animated.View
+              style={[
+                styles.mainContent,
+                {
+                  opacity: fadeIn,
+                  transform: [{ translateY: slideUp }],
+                },
+              ]}
+            >
+
+              {/* ═══════════════════════════════
+                  Main Card
+              ═══════════════════════════════ */}
+              <View style={styles.card}>
+                {/* Left Gold Accent Bar */}
+                <View style={styles.leftAccent} />
+
+                {/* ── Card Header ── */}
+                <View style={styles.headerSection}>
+                  <Text style={styles.cardLabel}>
+                    GATEKEEPING EXCELLENCE
+                  </Text>
+                  <Text style={styles.cardTitle}>
+                    Attendance{'\n'}Management{'\n'}System
+                  </Text>
+                  <Text style={styles.cardSubtitle}>
+                    Please select your persona to begin the authentication
+                    process.
+                  </Text>
+                </View>
+
+                {/* ── Student / Lecturer Toggle ── */}
+                <View style={styles.toggleContainer}>
+                  <Animated.View
+                    style={[
+                      styles.toggleIndicator,
+                      { left: toggleIndicatorLeft },
+                    ]}
+                  />
+                  <TouchableOpacity
+                    style={styles.toggleBtn}
+                    onPress={() => switchTab('student')}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      style={[
+                        styles.toggleText,
+                        activeTab === 'student' && styles.toggleTextActive,
+                      ]}
+                    >
+                      STUDENT
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.toggleBtn}
+                    onPress={() => switchTab('lecturer')}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      style={[
+                        styles.toggleText,
+                        activeTab === 'lecturer' &&
+                          styles.toggleTextActive,
+                      ]}
+                    >
+                      LECTURER
+                    </Text>
+                  </TouchableOpacity>
+                </View>
