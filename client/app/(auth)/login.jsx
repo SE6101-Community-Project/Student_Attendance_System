@@ -850,3 +850,60 @@ const styles = StyleSheet.create({
     letterSpacing: 3,
     color: '#775a19',
   },
+
+   // ══════════════════════════════════
+  // FOOTER — matches HTML footer
+  // ══════════════════════════════════
+  footer: {
+    marginTop: 40,
+    width: '100%',
+  },
+  footerDivider: {
+    height: 1,
+    backgroundColor: 'rgba(226, 232, 240, 0.8)',
+    marginBottom: 24,
+  },
+  footerContent: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexWrap: 'nowrap',
+    gap: 16,
+  },
+  footerLeft: {
+    gap: 6,
+  },
+  footerBrand: {
+    fontFamily: 'Newsreader_400Regular',
+    fontStyle: 'italic',
+    fontSize: 16,
+    color: '#00113a',
+    textAlign: 'center',
+  },
+  footerCopy: {
+    fontFamily: 'Manrope_600SemiBold',
+    fontSize: 8,
+    letterSpacing: 2,
+    color: '#757682',
+    maxWidth: 300,
+    marginTop: 14,
+  },
+  footerLinks: {
+    gap: 12,
+    alignItems: 'flex-end',
+  },
+  footerLink: {
+    fontFamily: 'Manrope_600SemiBold',
+    fontSize: 9,
+    letterSpacing: 2,
+    color: '#757682',
+    textTransform: 'uppercase',
+  },
+  footerLinkActive: {
+    fontFamily: 'Manrope_700Bold',
+    fontSize: 9,
+    letterSpacing: 2,
+    color: '#775a19',
+    textTransform: 'uppercase',
+  },
+});
