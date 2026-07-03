@@ -552,3 +552,163 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
   },
+
+  // ── Background Blobs ──
+  blobTopRight: {
+    position: 'absolute',
+    top: -60,
+    right: -60,
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: 'rgba(119, 90, 25, 0.04)',
+  },
+  blobBottomLeft: {
+    position: 'absolute',
+    bottom: -60,
+    left: -60,
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: 'rgba(0, 17, 58, 0.04)',
+  },
+
+  // ══════════════════════════════════
+  // HEADER
+  // ══════════════════════════════════
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 17, 58, 0.06)',
+    // BlurView handles the background
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  headerTitle: {
+    fontFamily: 'Newsreader_400Regular',
+    fontSize: 20,
+    color: '#00113a',
+    letterSpacing: -0.3,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
+  },
+  headerNavItem: {
+    fontFamily: 'Manrope_600SemiBold',
+    fontSize: 10,
+    letterSpacing: 3,
+    color: '#757682',
+    textTransform: 'uppercase',
+  },
+  headerNavActive: {
+    fontFamily: 'Manrope_700Bold',
+    fontSize: 10,
+    letterSpacing: 3,
+    color: '#775a19',
+    textTransform: 'uppercase',
+  },
+
+  // ══════════════════════════════════
+  // CARD
+  // ══════════════════════════════════
+  card: {
+    width: '100%',
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    padding: 32,
+    paddingLeft: 36,
+    shadowColor: '#00113a',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.06,
+    shadowRadius: 40,
+    elevation: 8,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  leftAccent: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 3,
+    height: '200%',
+    backgroundColor: '#775a19',
+  },
+
+  // ── Card Header ──
+  headerSection: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  cardLabel: {
+    fontFamily: 'Manrope_700Bold',
+    fontSize: 9,
+    letterSpacing: 4,
+    color: '#444650',
+    marginBottom: 14,
+  },
+  cardTitle: {
+    fontFamily: 'Newsreader_400Regular',
+    fontSize: 34,
+    lineHeight: 42,
+    color: '#775a19',
+    textAlign: 'center',
+    marginBottom: 14,
+  },
+  cardSubtitle: {
+    fontFamily: 'Manrope_400Regular',
+    fontSize: 13,
+    color: '#444650',
+    textAlign: 'center',
+    lineHeight: 20,
+    maxWidth: 280,
+  },
+
+  // ── Toggle ──
+  toggleContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#eeeeee',
+    borderRadius: 8,
+    padding: 4,
+    marginBottom: 32,
+    position: 'relative',
+    height: 46,
+  },
+  toggleIndicator: {
+    position: 'absolute',
+    top: 4,
+    bottom: 4,
+    width: '48%',
+    backgroundColor: '#ffffff',
+    borderRadius: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  toggleBtn: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  toggleText: {
+    fontFamily: 'Manrope_600SemiBold',
+    fontSize: 11,
+    letterSpacing: 3,
+    color: '#757682',
+  },
+  toggleTextActive: {
+    fontFamily: 'Manrope_700Bold',
+    color: '#00113a',
+  },
+
