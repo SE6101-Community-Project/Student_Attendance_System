@@ -451,3 +451,104 @@ export default function LoginScreen() {
                     </Text>
                   </TouchableOpacity>
                 </View>
+
+                 {/* ── Authenticate CTA ── */}
+                <TouchableOpacity
+                  style={[
+                    styles.ctaButton,
+                    activeTab === 'lecturer' && styles.ctaButtonLecturer,
+                    loading && styles.ctaButtonDisabled,
+                  ]}
+                  onPress={handleLogin}
+                  activeOpacity={0.85}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#ffffff" size="small" />
+                  ) : (
+                    <View style={styles.ctaContent}>
+                      <Text style={styles.ctaText}>AUTHENTICATE</Text>
+                      <MaterialCommunityIcons
+                        name="arrow-right"
+                        size={16}
+                        color="#ffffff"
+                      />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {/* ═══════════════════════════════
+                  Register Section
+              ═══════════════════════════════ */}
+              <View style={styles.registerSection}>
+                <View style={styles.dividerRow}>
+                  <View style={styles.dividerLine} />
+                  <Text style={styles.dividerText}>
+                    NEW TO THE ARCHIVE?
+                  </Text>
+                  <View style={styles.dividerLine} />
+                </View>
+
+                <TouchableOpacity
+                  style={styles.registerBtn}
+                  onPress={() => router.push('/(auth)/register')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.registerBtnText}>
+                    REGISTER ACCOUNT
+                  </Text>
+                  <MaterialCommunityIcons
+                    name="arrow-right"
+                    size={14}
+                    color="#775a19"
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* ── Footer ── */}
+              <View style={styles.footer}>
+                <View style={styles.footerDivider} />
+                <View style={styles.footerContent}>
+                  <View style={styles.footerLeft}>
+                    <Text style={styles.footerBrand}>
+                      University Archive
+                    </Text>
+                    <Text style={styles.footerCopy}>
+                      © 2026 University Archive. All rights reserved.
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </Animated.View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
+  );
+}
+
+// ─────────────────────────────────────────
+// Styles
+// ─────────────────────────────────────────
+const styles = StyleSheet.create({
+
+  // ── Layout ──
+  container: {
+    flex: 1,
+    backgroundColor: '#f9f9f9',
+  },
+  safeArea: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 38,
+    paddingBottom: 10,
+  },
+  mainContent: {
+    alignItems: 'center',
+    width: '100%',
+  },
