@@ -712,3 +712,141 @@ const styles = StyleSheet.create({
     color: '#00113a',
   },
 
+  // ── Error ──
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffdad6',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginBottom: 20,
+    gap: 8,
+  },
+  errorText: {
+    fontFamily: 'Manrope_600SemiBold',
+    fontSize: 12,
+    color: '#93000a',
+    flex: 1,
+    lineHeight: 18,
+  },
+
+  // ── Form ──
+  formSection: {
+    gap: 24,
+    marginBottom: 28,
+  },
+
+  // ── Utilities ──
+  utilitiesRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  rememberRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  checkbox: {
+    width: 18,
+    height: 18,
+    borderWidth: 1.5,
+    borderColor: '#c5c6d2',
+    borderRadius: 3,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxActive: {
+    borderColor: '#775a19',
+    backgroundColor: 'rgba(119, 90, 25, 0.08)',
+  },
+  rememberText: {
+    fontFamily: 'Manrope_600SemiBold',
+    fontSize: 9,
+    letterSpacing: 2,
+    color: '#444650',
+  },
+  forgotText: {
+    fontFamily: 'Manrope_600SemiBold',
+    fontSize: 9,
+    letterSpacing: 2,
+    color: '#775a19',
+    textDecorationLine: 'underline',
+    textDecorationColor: 'rgba(119, 90, 25, 0.3)',
+  },
+
+  // ── CTA ──
+  ctaButton: {
+    backgroundColor: '#002366',
+    paddingVertical: 18,
+    borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#00113a',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 6,
+  },
+  ctaButtonLecturer: {
+    backgroundColor: '#00113a',
+  },
+  ctaButtonDisabled: {
+    opacity: 0.7,
+  },
+  ctaContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  ctaText: {
+    fontFamily: 'Manrope_700Bold',
+    fontSize: 12,
+    letterSpacing: 4,
+    color: '#ffffff',
+  },
+
+  // ══════════════════════════════════
+  // REGISTER SECTION
+  // ══════════════════════════════════
+  registerSection: {
+    marginTop: 32,
+    alignItems: 'center',
+    width: '100%',
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    width: '100%',
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(197, 198, 210, 0.5)',
+  },
+  dividerText: {
+    fontFamily: 'Manrope_600SemiBold',
+    fontSize: 9,
+    letterSpacing: 2,
+    color: '#757682',
+    marginHorizontal: 16,
+  },
+  registerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderWidth: 1,
+    borderColor: 'rgba(119, 90, 25, 0.25)',
+    borderRadius: 4,
+  },
+  registerBtnText: {
+    fontFamily: 'Manrope_700Bold',
+    fontSize: 11,
+    letterSpacing: 3,
+    color: '#775a19',
+  },
