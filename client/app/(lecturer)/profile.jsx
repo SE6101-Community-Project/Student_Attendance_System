@@ -406,3 +406,140 @@ export default function LecturerProfileScreen() {
     if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
     return parts[0][0].toUpperCase();
   };
+
+  // ── Dropdown Picker Component ──
+  const DropdownPicker = ({ visible, options, selected, onSelect, onClose, label }) => {
+    if (!visible) return null;
+    return (
+      <View style={styles.dropdownContainer}>
+        <View style={styles.dropdownHeader}>
+          <Text style={styles.dropdownHeaderText}>{label}</Text>
+          <TouchableOpacity onPress={onClose}>
+            <MaterialCommunityIcons name="close" size={18} color="#444650" />
+          </TouchableOpacity>
+        </View>
+        {options.map((opt) => (
+          <TouchableOpacity
+            key={opt}
+            style={[styles.dropdownItem, selected === opt && styles.dropdownItemActive]}
+            onPress={() => { onSelect(opt); onClose(); }}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.dropdownItemText, selected === opt && styles.dropdownItemTextActive]}>
+              {opt}
+            </Text>
+            {selected === opt && (
+              <MaterialCommunityIcons name="check" size={16} color="#775a19" />
+            )}
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={{ flex: 1 }}>
+        <LoadingScreen
+          message="Loading analytics..."
+          submessage="Fetching Profile Info"
+          variant="full"
+        />
+      </SafeAreaView>
+    );
+  }
+
+  // ══════════════════════════════════════
+  // RENDER: PROFILE TAB
+  // ══════════════════════════════════════
+  const renderProfileTab = () => (
+    <>
+      {/* ── Profile Hero Card ── */}
+      <View style={styles.profileCard}>
+        {/* Avatar with edit overlay */}
+        <View style={styles.profileTop}>
+          <TouchableOpacity
+            onPress={editing ? handlePickImage : undefined}
+            style={styles.avatarWrapper}
+            activeOpacity={editing ? 0.7 : 1}
+          >
+            <View style={styles.avatarLarge}>
+              {profileImageUri ? (
+                <Image
+                  source={{ uri: profileImageUri }}
+                  style={styles.avatarImage}
+                />
+              ) : (
+                <Text style={styles.avatarLargeText}>{getInitials()}</Text>
+              )}
+              {/* Green online indicator (non-edit mode) */}
+              {!editing && <View style={styles.activeIndicator} />}
+            </View>
+
+            {/* Edit overlay badge */}
+            {editing && (
+              <View style={styles.avatarEditOverlay}>
+                <MaterialCommunityIcons name="camera" size={18} color="#ffffff" />
+              </View>
+            )}
+          </TouchableOpacity>
+
+          <View style={styles.profileNameSection}>
+            <Text style={styles.profileName}>{profile?.name || name || 'Lecturer'}</Text>
+            <Text style={styles.profileDesignation}>{profile?.designation || designation || 'Lecturer'}</Text>
+            <View style={styles.verifiedBadge}>
+              <MaterialCommunityIcons
+                name={profile?.isVerified ? 'check-decagram' : 'clock-outline'}
+                size={14}
+                color={profile?.isVerified ? '#4CAF50' : '#F59E0B'}
+              />
+              <Text style={[styles.verifiedText, { color: profile?.isVerified ? '#4CAF50' : '#F59E0B' }]}>
+                {profile?.isVerified ? 'VERIFIED' : 'PENDING'}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Info Pills */}
+        <View style={styles.infoPills}>
+          <View style={styles.infoPill}>
+            <MaterialCommunityIcons name="identifier" size={12} color="#775a19" />
+            <Text style={styles.infoPillText}>{profile?.lecturerId || '—'}</Text>
+          </View>
+          <View style={styles.infoPill}>
+            <MaterialCommunityIcons name="domain" size={12} color="#775a19" />
+            <Text style={styles.infoPillText}>{department || profile?.department || '—'}</Text>
+          </View>
+        </View>
+
+        {/* Image note when editing */}
+        {editing && (
+          <TouchableOpacity style={styles.changePhotoRow} onPress={handlePickImage} activeOpacity={0.7}>
+            <MaterialCommunityIcons name="image-plus" size={16} color="rgba(233,193,118,0.8)" />
+            <Text style={styles.changePhotoText}>
+              {profileImageBase64 ? 'Image selected — tap to change' : 'Tap avatar or here to upload photo'}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* ── Personal Details ── */}
+      <View style={styles.sectionCard}>
+        <View style={styles.sectionCardHeader}>
+          <View>
+            <Text style={styles.sectionCardTitle}>Personal Details</Text>
+            <Text style={styles.sectionCardSubtitle}>
+              {editing ? 'Edit your information below' : 'Your registered information'}
+            </Text>
+          </View>
+          {!editing ? (
+            <TouchableOpacity onPress={() => setEditing(true)} style={styles.editIconBtn}>
+              <MaterialCommunityIcons name="pencil-outline" size={18} color="#775a19" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity onPress={handleCancelEdit} style={[styles.editIconBtn, { backgroundColor: 'rgba(186,26,26,0.06)' }]}>
+              <MaterialCommunityIcons name="close" size={18} color="#ba1a1a" />
+            </TouchableOpacity>
+          )}
+        </View>
+
