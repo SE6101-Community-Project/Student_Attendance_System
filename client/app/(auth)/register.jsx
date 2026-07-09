@@ -1,0 +1,1940 @@
+import { useState, useRef, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Animated,
+  StatusBar,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  ActivityIndicator,
+  Image,
+  StyleSheet,
+  Dimensions,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import { useAuth } from "@/src/context/AuthContext";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+// ── Department options ──
+const DEPARTMENTS = [
+  { label: "Select your department", value: "" },
+  { label: "Software Engineering", value: "Software Engineering" },
+  { label: "Information System", value: "Information System" },
+  { label: "Data Science", value: "Data Science" },
+];
+
+const BATCHES = [
+  { label: "Select your batch", value: "" },
+  { label: "Batch 2019/2020", value: "2019/2020" },
+  { label: "Batch 2020/2021", value: "2020/2021" },
+  { label: "Batch 2021/2022", value: "2021/2022" },
+  { label: "Batch 2022/2023", value: "2022/2023" },
+  { label: "Batch 2023/2024", value: "2023/2024" },
+  { label: "Batch 2024/2025", value: "2024/2025" },
+  { label: "Batch 2025/2026", value: "2025/2026" },
+];
+
+const DESIGNATIONS = [
+  { label: "Select designation", value: "" },
+  { label: "Professor", value: "Professor" },
+  { label: "Senior Lecturer", value: "Senior Lecturer" },
+  { label: "Lecturer", value: "Lecturer" },
+  { label: "Assistant Lecturer", value: "Assistant Lecturer" },
+  { label: "Visiting Lecturer", value: "Visiting Lecturer" },
+  { label: "Instructor", value: "Instructor" },
+];
+
+export default function RegisterScreen() {
+  // ── Role Toggle ──
+  const [role, setRole] = useState("student"); // 'student' | 'lecturer'
+  const toggleAnim = useRef(new Animated.Value(0)).current;
+
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = role === "student" ? 3 : 2;
+
+  // ── Form Data ──
+  const [formData, setFormData] = useState({
+    name: "",
+    studentId: "",
+    lecturerId: "",
+    email: "",
+    mobile: "",
+    department: "",
+    batch: "",
+    designation: "",
+    password: "",
+    confirmPassword: "",
+    imageBase64: null,
+  });
+
+  // ── UI State ──
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showDeptPicker, setShowDeptPicker] = useState(false);
+  const [showBatchPicker, setShowBatchPicker] = useState(false);
+  const [showDesignationPicker, setShowDesignationPicker] = useState(false);
+
+  // ── Camera State ──
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+  const [cameraReady, setCameraReady] = useState(false);
+  const [capturedImage, setCapturedImage] = useState(null);
+  const [cameraFacing, setCameraFacing] = useState("front");
+  const cameraRef = useRef(null);
+
+  // ── Auth Context ──
+  const { registerStudent } = useAuth();
+
+    // ── Animations ──
+  const fadeIn = useRef(new Animated.Value(0)).current;
+  const slideUp = useRef(new Animated.Value(30)).current;
+  const stepAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeIn, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideUp, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  // Animate step transitions
+  useEffect(() => {
+    stepAnim.setValue(0);
+    Animated.timing(stepAnim, {
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
+  }, [currentStep]);
+
+  const switchRole = (newRole) => {
+    if (newRole === role) return;
+    setRole(newRole);
+    setCurrentStep(1);
+    setError("");
+    setCapturedImage(null);
+    setFormData({
+      name: "",
+      studentId: "",
+      lecturerId: "",
+      email: "",
+      mobile: "",
+      department: "",
+      batch: "",
+      designation: "",
+      password: "",
+      confirmPassword: "",
+      imageBase64: null,
+    });
+
+    Animated.timing(toggleAnim, {
+      toValue: newRole === "lecturer" ? 1 : 0,
+      duration: 250,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const updateField = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (error) 
+      setError("");
+  };
+
+  const getBorderColor = (field) =>
+    focusedField === field ? "#775a19" : "#c5c6d2";
+  const getLabelColor = (field) =>
+    focusedField === field ? "#775a19" : "#444650";
+
+  // ══════════════════════════════════════
+  // VALIDATION
+  // ══════════════════════════════════════
+  const validateStep1 = () => {
+    if (!formData.name.trim()) {
+      setError("Please enter your full name");
+      return false;
+    }
+
+    if (role === "student") {
+      if (!formData.studentId.trim()) {
+        setError("Please enter your Student ID");
+        return false;
+      }
+      if (!formData.batch) {
+        setError("Please select your batch");
+        return false;
+      }
+    } else {
+      if (!formData.lecturerId.trim()) {
+        setError("Please enter your Lecturer ID");
+        return false;
+      }
+      if (!formData.designation) {
+        setError("Please select your designation");
+        return false;
+      }
+    }
+
+    if (!formData.email.trim()) {
+      setError("Please enter your email");
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email.trim())) {
+      setError("Please enter a valid email address");
+      return false;
+    }
+
+    if (!formData.mobile.trim()) {
+      setError("Please enter your mobile number");
+      return false;
+    }
+
+    if (!formData.department) {
+      setError("Please select your department");
+      return false;
+    }
+
+    return true;
+  };
+
+  const validateStep2Face = () => {
+    if (!capturedImage || !formData.imageBase64) {
+      setError("Please capture your face photo");
+      return false;
+    }
+    return true;
+  };
+
+  const validatePasswordStep = () => {
+    if (!formData.password.trim()) {
+      setError("Please enter a password");
+      return false;
+    }
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return false;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return false;
+    }
+    return true;
+  };
+
+  // ══════════════════════════════════════
+  // NAVIGATION
+  // ══════════════════════════════════════
+  const handleNext = () => {
+    setError("");
+
+    if (currentStep === 1) {
+      if (!validateStep1()) 
+        return;
+      setCurrentStep(2);
+    } else if (currentStep === 2 && role === "student") {
+      // Student step 2 = Face
+      if (!validateStep2Face()) 
+        return;
+      setCurrentStep(3);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+      setError("");
+    } else {
+      router.back();
+    }
+  };
+
+  // ══════════════════════════════════════
+  // CAMERA
+  // ══════════════════════════════════════
+  const handleCapture = async () => {
+    if (!cameraRef.current || !cameraReady) 
+      return;
+
+    try {
+      const photo = await cameraRef.current.takePictureAsync({
+        base64: true,
+        quality: 0.7,
+        exif: false,
+      });
+
+      setCapturedImage(photo.uri);
+      updateField("imageBase64", photo.base64);
+    } catch (err) {
+      console.log(err);
+      setError("Failed to capture photo. Please try again.");
+    }
+  };
+
+  const handleRetake = () => {
+    setCapturedImage(null);
+    updateField("imageBase64", null);
+  };
+
+  // ══════════════════════════════════════
+  // SUBMIT REGISTRATION
+  // ══════════════════════════════════════
+  const handleSubmit = async () => {
+    setError("");
+    if (!validatePasswordStep()) 
+      return;
+
+    setLoading(true);
+
+    try {
+      if (role === "student") {
+        // ── Student Registration ──
+        const result = await registerStudent({
+          studentId: formData.studentId.trim(),
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          password: formData.password,
+          mobile: formData.mobile.trim(),
+          batch: formData.batch,
+          department: formData.department,
+          imageBase64: formData.imageBase64,
+        });
+
+        if (result.success) {
+          router.replace({
+            pathname: "/(auth)/verify-email",
+            params: { email: formData.email.trim() },
+          });
+        } else {
+          console.log(result.message);
+          setError(result.message || "Registration failed");
+          // Go back to relevant step on face errors
+          if (
+            result.step === "face_detection" ||
+            result.step === "face_encoding"
+          ) {
+            setCurrentStep(2);
+          }
+        }
+      } else {
+        // ── Lecturer Registration ──
+        const { default: api } = await import("@/src/api/axiosInstance");
+        const response = await api.post("/lecturer/register", {
+          lecturerId: formData.lecturerId.trim(),
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          password: formData.password,
+          mobile: formData.mobile.trim(),
+          department: formData.department,
+          designation: formData.designation,
+        });
+
+        if (response.data.success) {
+          router.replace({
+            pathname: "/(auth)/verify-email",
+            params: { email: formData.email.trim() },
+          });
+        } else {
+          console.log(response.data.message);
+          setError(response.data.message || "Registration failed");
+        }
+      }
+    } catch (err) {
+      setError(
+        err.response?.data?.message || err.message || "Registration failed",
+      );
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+   // ══════════════════════════════════════
+  // STEP HEADERS
+  // ══════════════════════════════════════
+  const getStepInfo = () => {
+    if (role === "student") {
+      switch (currentStep) {
+        case 1:
+          return {
+            label: "IDENTITY & ENROLLMENT",
+            title: "Personal\nDetails",
+            progress: 33,
+          };
+        case 2:
+          return {
+            label: "IDENTIFICATION",
+            title: "Biometric\nVerification",
+            progress: 66,
+          };
+        case 3:
+          return {
+            label: "SECURITY PHASE",
+            title: "Secure Your\nArchive",
+            progress: 100,
+          };
+      }
+    } else {
+      switch (currentStep) {
+        case 1:
+          return {
+            label: "IDENTITY & ENROLLMENT",
+            title: "Personal\nDetails",
+            progress: 50,
+          };
+        case 2:
+          return {
+            label: "SECURITY PHASE",
+            title: "Secure Your\nArchive",
+            progress: 100,
+          };
+      }
+    }
+  };
+
+  const stepInfo = getStepInfo();
+
+  // ══════════════════════════════════════
+  // CUSTOM DROPDOWN
+  // ══════════════════════════════════════
+  const DropdownPicker = ({
+    visible,
+    options,
+    selectedValue,
+    onSelect,
+    onClose,
+  }) => {
+    if (!visible) 
+      return null;
+    return (
+      <View style={styles.dropdownOverlay}>
+        <TouchableOpacity
+          style={styles.dropdownBackdrop}
+          activeOpacity={1}
+          onPress={onClose}
+        />
+        <View style={styles.dropdownContainer}>
+          <View style={styles.dropdownHeader}>
+            <Text style={styles.dropdownHeaderText}>SELECT OPTION</Text>
+            <TouchableOpacity onPress={onClose}>
+              <MaterialCommunityIcons name="close" size={20} color="#444650" />
+            </TouchableOpacity>
+          </View>
+          <ScrollView style={styles.dropdownScroll} bounces={false}>
+            {options
+              .filter((o) => o.value !== "")
+              .map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[
+                    styles.dropdownItem,
+                    selectedValue === option.value && styles.dropdownItemActive,
+                  ]}
+                  onPress={() => {
+                    onSelect(option.value);
+                    onClose();
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      styles.dropdownItemText,
+                      selectedValue === option.value &&
+                        styles.dropdownItemTextActive,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                  {selectedValue === option.value && (
+                    <MaterialCommunityIcons
+                      name="check"
+                      size={18}
+                      color="#775a19"
+                    />
+                  )}
+                </TouchableOpacity>
+              ))}
+          </ScrollView>
+        </View>
+      </View>
+    );
+  };
+
+   // ══════════════════════════════════════
+  // RENDER: STEP 1 — PERSONAL DETAILS
+  // ══════════════════════════════════════
+  const renderStep1 = () => (
+    <View style={styles.formCard}>
+      {/* Name */}
+      <View style={styles.inputGroup}>
+        <Text style={[styles.inputLabel, { color: getLabelColor("name") }]}>
+          FULL NAME
+        </Text>
+        <TextInput
+          style={[styles.input, { borderBottomColor: getBorderColor("name") }]}
+          placeholder="As it appears on your ID"
+          placeholderTextColor="rgba(197,198,210,0.7)"
+          value={formData.name}
+          onChangeText={(t) => updateField("name", t)}
+          onFocus={() => setFocusedField("name")}
+          onBlur={() => setFocusedField(null)}
+          autoCapitalize="words"
+        />
+      </View>
+
+      {/* Student ID or Lecturer ID */}
+      {role === "student" ? (
+        <View style={styles.inputGroup}>
+          <Text
+            style={[styles.inputLabel, { color: getLabelColor("studentId") }]}
+          >
+            STUDENT ID
+          </Text>
+          <TextInput
+            style={[
+              styles.input,
+              { borderBottomColor: getBorderColor("studentId") },
+            ]}
+            placeholder="21CSEXXXX"
+            placeholderTextColor="rgba(197,198,210,0.7)"
+            value={formData.studentId}
+            onChangeText={(t) => updateField("studentId", t)}
+            onFocus={() => setFocusedField("studentId")}
+            onBlur={() => setFocusedField(null)}
+            autoCapitalize="characters"
+          />
+        </View>
+      ) : (
+        <View style={styles.inputGroup}>
+          <Text
+            style={[styles.inputLabel, { color: getLabelColor("lecturerId") }]}
+          >
+            LECTURER ID
+          </Text>
+          <TextInput
+            style={[
+              styles.input,
+              { borderBottomColor: getBorderColor("lecturerId") },
+            ]}
+            placeholder="LEC-XXXX"
+            placeholderTextColor="rgba(197,198,210,0.7)"
+            value={formData.lecturerId}
+            onChangeText={(t) => updateField("lecturerId", t)}
+            onFocus={() => setFocusedField("lecturerId")}
+            onBlur={() => setFocusedField(null)}
+            autoCapitalize="characters"
+          />
+        </View>
+      )}
+
+      {/* Email */}
+      <View style={styles.inputGroup}>
+        <Text style={[styles.inputLabel, { color: getLabelColor("email") }]}>
+          EMAIL ADDRESS
+        </Text>
+        <TextInput
+          style={[styles.input, { borderBottomColor: getBorderColor("email") }]}
+          placeholder="youremail_pre@std.foc.sab.ac.lk"
+          placeholderTextColor="rgba(197,198,210,0.7)"
+          value={formData.email}
+          onChangeText={(t) => updateField("email", t)}
+          onFocus={() => setFocusedField("email")}
+          onBlur={() => setFocusedField(null)}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+      </View>
+
+      {/* Mobile */}
+      <View style={styles.inputGroup}>
+        <Text style={[styles.inputLabel, { color: getLabelColor("mobile") }]}>
+          MOBILE NUMBER
+        </Text>
+        <TextInput
+          style={[
+            styles.input,
+            { borderBottomColor: getBorderColor("mobile") },
+          ]}
+          placeholder="+94 7X XXX XXXX"
+          placeholderTextColor="rgba(197,198,210,0.7)"
+          value={formData.mobile}
+          onChangeText={(t) => updateField("mobile", t)}
+          onFocus={() => setFocusedField("mobile")}
+          onBlur={() => setFocusedField(null)}
+          keyboardType="phone-pad"
+        />
+      </View>
+
+      {/* Department Dropdown */}
+      <View style={styles.inputGroup}>
+        <Text
+          style={[styles.inputLabel, { color: getLabelColor("department") }]}
+        >
+          DEPARTMENT
+        </Text>
+        <TouchableOpacity
+          style={[
+            styles.dropdownTrigger,
+            { borderBottomColor: getBorderColor("department") },
+          ]}
+          onPress={() => setShowDeptPicker(true)}
+          activeOpacity={0.7}
+        >
+          <Text
+            style={[
+              styles.dropdownTriggerText,
+              !formData.department && styles.dropdownPlaceholder,
+            ]}
+          >
+            {formData.department || "Select your department"}
+          </Text>
+          <MaterialCommunityIcons
+            name="chevron-down"
+            size={20}
+            color="#757682"
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Batch (Student) or Designation (Lecturer) */}
+      {role === "student" ? (
+        <View style={styles.inputGroup}>
+          <Text style={[styles.inputLabel, { color: getLabelColor("batch") }]}>
+            BATCH / INTAKE YEAR
+          </Text>
+          <TouchableOpacity
+            style={[
+              styles.dropdownTrigger,
+              { borderBottomColor: getBorderColor("batch") },
+            ]}
+            onPress={() => setShowBatchPicker(true)}
+            activeOpacity={0.7}
+          >
+            <Text
+              style={[
+                styles.dropdownTriggerText,
+                !formData.batch && styles.dropdownPlaceholder,
+              ]}
+            >
+              {formData.batch ? `Batch ${formData.batch}` : "Select your batch"}
+            </Text>
+            <MaterialCommunityIcons
+              name="chevron-down"
+              size={20}
+              color="#757682"
+            />
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={styles.inputGroup}>
+          <Text
+            style={[styles.inputLabel, { color: getLabelColor("designation") }]}
+          >
+            DESIGNATION
+          </Text>
+          <TouchableOpacity
+            style={[
+              styles.dropdownTrigger,
+              { borderBottomColor: getBorderColor("designation") },
+            ]}
+            onPress={() => setShowDesignationPicker(true)}
+            activeOpacity={0.7}
+          >
+            <Text
+              style={[
+                styles.dropdownTriggerText,
+                !formData.designation && styles.dropdownPlaceholder,
+              ]}
+            >
+              {formData.designation || "Select designation"}
+            </Text>
+            <MaterialCommunityIcons
+              name="chevron-down"
+              size={20}
+              color="#757682"
+            />
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
+
+   // ══════════════════════════════════════
+  // RENDER: STEP 2 — FACE CAPTURE (Student only)
+  // ══════════════════════════════════════
+  const renderStep2Face = () => {
+    if (!cameraPermission) 
+      return <ActivityIndicator color="#775a19" />;
+
+    if (!cameraPermission.granted) {
+      return (
+        <View style={styles.formCard}>
+          <View style={styles.cameraPermissionCard}>
+            <MaterialCommunityIcons
+              name="camera-off-outline"
+              size={48}
+              color="#775a19"
+            />
+            <Text style={styles.permissionTitle}>Camera Access Required</Text>
+            <Text style={styles.permissionText}>
+              We need camera access to capture your face photo for biometric
+              verification.
+            </Text>
+            <TouchableOpacity
+              style={styles.permissionBtn}
+              onPress={requestCameraPermission}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.permissionBtnText}>GRANT PERMISSION</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.faceStepContainer}>
+        {/* Instructions */}
+        <View style={styles.instructionsCard}>
+          <Text style={styles.instructionsTitle}>Instructions</Text>
+          <Text style={styles.instructionsText}>
+            Ensure you are in a well-lit environment. Remove glasses or hats.
+          </Text>
+          <View style={styles.instructionsList}>
+            <View style={styles.instructionItem}>
+              <MaterialCommunityIcons
+                name="white-balance-sunny"
+                size={16}
+                color="#775a19"
+              />
+              <Text style={styles.instructionItemText}>Avoid backlighting</Text>
+            </View>
+            <View style={styles.instructionItem}>
+              <MaterialCommunityIcons
+                name="face-recognition"
+                size={16}
+                color="#775a19"
+              />
+              <Text style={styles.instructionItemText}>
+                Remove glasses or hats
+              </Text>
+            </View>
+            <View style={styles.instructionItem}>
+              <MaterialCommunityIcons
+                name="crosshairs-gps"
+                size={16}
+                color="#775a19"
+              />
+              <Text style={styles.instructionItemText}>
+                Align face with guide
+              </Text>
+            </View>
+          </View>
+        </View>
+
+         {/* Camera / Preview */}
+        <View style={styles.cameraCard}>
+          <View style={styles.cameraViewport}>
+            {capturedImage ? (
+              <Image
+                source={{ uri: capturedImage }}
+                style={styles.capturedPreview}
+              />
+            ) : (
+              <CameraView
+                ref={cameraRef}
+                style={styles.camera}
+                facing={cameraFacing}
+                onCameraReady={() => setCameraReady(true)}
+              />
+            )}
+
+            {/* Face Guide Overlay */}
+            {!capturedImage && (
+              <View style={styles.faceGuideOverlay}>
+                <View style={styles.faceGuideOval} />
+              </View>
+            )}
+
+            {/* Live Badge */}
+            {!capturedImage && (
+              <View style={styles.liveBadge}>
+                <View style={styles.liveDot} />
+                <Text style={styles.liveText}>LIVE</Text>
+              </View>
+            )}
+
+            {/* Captured Badge */}
+            {capturedImage && (
+              <View style={styles.capturedBadge}>
+                <MaterialCommunityIcons
+                  name="check-circle"
+                  size={14}
+                  color="#4CAF50"
+                />
+                <Text style={styles.capturedBadgeText}>CAPTURED</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Camera Actions */}
+          <View style={styles.cameraActions}>
+            <Text style={styles.cameraHint}>
+              {capturedImage
+                ? "Photo captured successfully"
+                : "Place your face within the frame"}
+            </Text>
+
+            <View style={styles.cameraButtons}>
+              {capturedImage ? (
+                <>
+                  <TouchableOpacity
+                    style={styles.retakeBtn}
+                    onPress={handleRetake}
+                    activeOpacity={0.85}
+                  >
+                    <MaterialCommunityIcons
+                      name="refresh"
+                      size={16}
+                      color="#00113a"
+                    />
+                    <Text style={styles.retakeBtnText}>RETAKE</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={styles.flipBtn}
+                    onPress={() =>
+                      setCameraFacing((f) => (f === "front" ? "back" : "front"))
+                    }
+                    activeOpacity={0.85}
+                  >
+                    <MaterialCommunityIcons
+                      name="camera-flip-outline"
+                      size={16}
+                      color="#00113a"
+                    />
+                    <Text style={styles.flipBtnText}>FLIP</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.captureBtn}
+                    onPress={handleCapture}
+                    activeOpacity={0.85}
+                  >
+                    <MaterialCommunityIcons
+                      name="camera"
+                      size={16}
+                      color="#ffffff"
+                    />
+                    <Text style={styles.captureBtnText}>CAPTURE IDENTITY</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          </View>
+        </View>
+
+        {/* Privacy Note */}
+        <View style={styles.privacyNote}>
+          <MaterialCommunityIcons
+            name="lock-outline"
+            size={12}
+            color="#757682"
+          />
+          <Text style={styles.privacyNoteText}>
+            ENCRYPTED BIOMETRIC DATA PROCESSING
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+   // ══════════════════════════════════════
+  // RENDER: PASSWORD STEP
+  // ══════════════════════════════════════
+  const renderPasswordStep = () => (
+    <View style={styles.formCard}>
+      {/* Password */}
+      <View style={styles.inputGroup}>
+        <Text style={[styles.inputLabel, { color: getLabelColor("password") }]}>
+          CREATE PASSWORD
+        </Text>
+        <View style={styles.passwordRow}>
+          <TextInput
+            style={[
+              styles.input,
+              styles.passwordInput,
+              { borderBottomColor: getBorderColor("password") },
+            ]}
+            placeholder="••••••••••••"
+            placeholderTextColor="rgba(197,198,210,0.7)"
+            value={formData.password}
+            onChangeText={(t) => updateField("password", t)}
+            onFocus={() => setFocusedField("password")}
+            onBlur={() => setFocusedField(null)}
+            secureTextEntry={!showPassword}
+            autoCapitalize="none"
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+            style={styles.eyeBtn}
+          >
+            <MaterialCommunityIcons
+              name={showPassword ? "eye-off-outline" : "eye-outline"}
+              size={20}
+              color="#757682"
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Password Strength */}
+        {formData.password.length > 0 && (
+          <View style={styles.strengthRow}>
+            <Text style={styles.strengthLabel}>
+              {formData.password.length >= 8
+                ? "STRONG ARCHIVAL KEY"
+                : formData.password.length >= 6
+                  ? "MODERATE KEY"
+                  : "WEAK KEY"}
+            </Text>
+            <View style={styles.strengthBars}>
+              {[1, 2, 3, 4].map((i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.strengthBar,
+                    {
+                      backgroundColor:
+                        formData.password.length >= i * 2
+                          ? "#775a19"
+                          : "#e8e8e8",
+                    },
+                  ]}
+                />
+              ))}
+            </View>
+          </View>
+        )}
+      </View>
+
+      {/* Confirm Password */}
+      <View style={styles.inputGroup}>
+        <Text
+          style={[
+            styles.inputLabel,
+            { color: getLabelColor("confirmPassword") },
+          ]}
+        >
+          CONFIRM PASSWORD
+        </Text>
+        <View style={styles.passwordRow}>
+          <TextInput
+            style={[
+              styles.input,
+              styles.passwordInput,
+              { borderBottomColor: getBorderColor("confirmPassword") },
+            ]}
+            placeholder="••••••••••••"
+            placeholderTextColor="rgba(197,198,210,0.7)"
+            value={formData.confirmPassword}
+            onChangeText={(t) => updateField("confirmPassword", t)}
+            onFocus={() => setFocusedField("confirmPassword")}
+            onBlur={() => setFocusedField(null)}
+            secureTextEntry={!showConfirmPassword}
+            autoCapitalize="none"
+          />
+          <TouchableOpacity
+            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+            style={styles.eyeBtn}
+          >
+            <MaterialCommunityIcons
+              name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
+              size={20}
+              color="#757682"
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Match indicator */}
+        {formData.confirmPassword.length > 0 && (
+          <View style={styles.matchRow}>
+            <MaterialCommunityIcons
+              name={
+                formData.password === formData.confirmPassword
+                  ? "check-circle-outline"
+                  : "close-circle-outline"
+              }
+              size={14}
+              color={
+                formData.password === formData.confirmPassword
+                  ? "#4CAF50"
+                  : "#ba1a1a"
+              }
+            />
+            <Text
+              style={[
+                styles.matchText,
+                {
+                  color:
+                    formData.password === formData.confirmPassword
+                      ? "#4CAF50"
+                      : "#ba1a1a",
+                },
+              ]}
+            >
+              {formData.password === formData.confirmPassword
+                ? "Passwords match"
+                : "Passwords do not match"}
+            </Text>
+          </View>
+        )}
+      </View>
+
+      {/* Agreement */}
+      <Text style={styles.agreementText}>
+        By completing enrollment, you agree to the Academic Code of Conduct
+      </Text>
+    </View>
+  );
+
+   // ══════════════════════════════════════
+  // RENDER: CURRENT STEP CONTENT
+  // ══════════════════════════════════════
+  const renderCurrentStep = () => {
+    if (role === "student") {
+      switch (currentStep) {
+        case 1:
+          return renderStep1();
+        case 2:
+          return renderStep2Face();
+        case 3:
+          return renderPasswordStep();
+      }
+    } else {
+      switch (currentStep) {
+        case 1:
+          return renderStep1();
+        case 2:
+          return renderPasswordStep();
+      }
+    }
+  };
+
+  // Is this the final step?
+  const isFinalStep =
+    (role === "student" && currentStep === 3) ||
+    (role === "lecturer" && currentStep === 2);
+
+  // ══════════════════════════════════════
+  // MAIN RENDER
+  // ══════════════════════════════════════
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#f9f9f9" />
+
+      <SafeAreaView style={styles.safeArea}>
+        {/* ── Header ── */}
+        <View style={styles.headerBar}>
+          <TouchableOpacity
+            onPress={handleBack}
+            style={styles.backBtn}
+            activeOpacity={0.7}
+          >
+            <MaterialCommunityIcons
+              name="arrow-left"
+              size={24}
+              color="#00113a"
+            />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>
+            {role === "student" ? "Student" : "Lecturer"} Registration
+          </Text>
+          <Text style={styles.stepIndicatorHeader}>
+            Step {currentStep} of {totalSteps}
+          </Text>
+        </View>
+
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+        >
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <Animated.View
+              style={[
+                styles.mainContent,
+                {
+                  opacity: fadeIn,
+                  transform: [{ translateY: slideUp }],
+                },
+              ]}
+            >
+              {/* ── Role Toggle (Step 1 only) ── */}
+              {currentStep === 1 && (
+                <View style={styles.roleToggleContainer}>
+                  <Animated.View
+                    style={[
+                      styles.roleToggleIndicator,
+                      {
+                        left: toggleAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ["2%", "50%"],
+                        }),
+                      },
+                    ]}
+                  />
+                  <TouchableOpacity
+                    style={styles.roleToggleBtn}
+                    onPress={() => switchRole("student")}
+                    activeOpacity={0.7}
+                  >
+                    <MaterialCommunityIcons
+                      name="account-school-outline"
+                      size={14}
+                      color={role === "student" ? "#00113a" : "#757682"}
+                    />
+                    <Text
+                      style={[
+                        styles.roleToggleText,
+                        role === "student" && styles.roleToggleTextActive,
+                      ]}
+                    >
+                      STUDENT
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.roleToggleBtn}
+                    onPress={() => switchRole("lecturer")}
+                    activeOpacity={0.7}
+                  >
+                    <MaterialCommunityIcons
+                      name="human-male-board"
+                      size={14}
+                      color={role === "lecturer" ? "#00113a" : "#757682"}
+                    />
+                    <Text
+                      style={[
+                        styles.roleToggleText,
+                        role === "lecturer" && styles.roleToggleTextActive,
+                      ]}
+                    >
+                      LECTURER
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* ── Archival Header ── */}
+              <View style={styles.archivalHeader}>
+                <View style={styles.archivalAccent} />
+                <View>
+                  <Text style={styles.archivalLabel}>{stepInfo.label}</Text>
+                  <Text style={styles.archivalTitle}>{stepInfo.title}</Text>
+                </View>
+              </View>
+
+              {/* ── Progress Bar ── */}
+              <View style={styles.progressSection}>
+                <View style={styles.progressBarTrack}>
+                  <View
+                    style={[
+                      styles.progressBarFill,
+                      { width: `${stepInfo.progress}%` },
+                    ]}
+                  />
+                </View>
+                <View style={styles.progressDots}>
+                  {Array.from({ length: totalSteps }, (_, i) => (
+                    <View
+                      key={i}
+                      style={[
+                        styles.progressDot,
+                        i < currentStep && styles.progressDotActive,
+                      ]}
+                    />
+                  ))}
+                  <Text style={styles.progressText}>
+                    {String(currentStep).padStart(2, "0")} /{" "}
+                    {String(totalSteps).padStart(2, "0")}
+                  </Text>
+                </View>
+              </View>
+
+              {/* ── Error ── */}
+              {error ? (
+                <View style={styles.errorContainer}>
+                  <MaterialCommunityIcons
+                    name="alert-circle-outline"
+                    size={16}
+                    color="#ba1a1a"
+                  />
+                  <Text style={styles.errorText}>{error}</Text>
+                </View>
+              ) : null}
+
+              {/* ── Step Content ── */}
+              <Animated.View
+                style={{
+                  opacity: stepAnim,
+                  transform: [
+                    {
+                      translateX: stepAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [30, 0],
+                      }),
+                    },
+                  ],
+                }}
+              >
+                {renderCurrentStep()}
+              </Animated.View>
+
+              {/* ── Actions ── */}
+              <View style={styles.actionsSection}>
+                {isFinalStep ? (
+                  <TouchableOpacity
+                    style={[
+                      styles.submitBtn,
+                      loading && styles.submitBtnDisabled,
+                    ]}
+                    onPress={handleSubmit}
+                    activeOpacity={0.85}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <ActivityIndicator color="#ffffff" size="small" />
+                    ) : (
+                      <Text style={styles.submitBtnText}>
+                        COMPLETE ENROLLMENT
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.nextBtn}
+                    onPress={handleNext}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={styles.nextBtnText}>CONTINUE</Text>
+                    <MaterialCommunityIcons
+                      name="arrow-right"
+                      size={16}
+                      color="#ffffff"
+                    />
+                  </TouchableOpacity>
+                )}
+
+                {/* Login Link */}
+                <View style={styles.loginLinkRow}>
+                  <Text style={styles.loginLinkText}>
+                    Already have an account?
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => router.replace("/(auth)/login")}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.loginLinkAction}>LOGIN</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* ── Footer ── */}
+              <Text style={styles.footerCopyright}>
+                © SABARAGAMUWA UNIVERSITY OF SRI LANKA
+              </Text>
+            </Animated.View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+
+      {/* ── Dropdown Pickers ── */}
+      <DropdownPicker
+        visible={showDeptPicker}
+        options={DEPARTMENTS}
+        selectedValue={formData.department}
+        onSelect={(v) => updateField("department", v)}
+        onClose={() => setShowDeptPicker(false)}
+      />
+      <DropdownPicker
+        visible={showBatchPicker}
+        options={BATCHES}
+        selectedValue={formData.batch}
+        onSelect={(v) => updateField("batch", v)}
+        onClose={() => setShowBatchPicker(false)}
+      />
+      <DropdownPicker
+        visible={showDesignationPicker}
+        options={DESIGNATIONS}
+        selectedValue={formData.designation}
+        onSelect={(v) => updateField("designation", v)}
+        onClose={() => setShowDesignationPicker(false)}
+      />
+    </View>
+  );
+}
+
+// ══════════════════════════════════════
+// STYLES
+// ══════════════════════════════════════
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#f9f9f9" },
+  safeArea: { flex: 1 },
+
+  // ── Header ──
+  headerBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(232,232,232,0.5)",
+  },
+  backBtn: { padding: 4, marginRight: 12 },
+  headerTitle: {
+    fontFamily: "Newsreader_400Regular",
+    fontSize: 18,
+    color: "#00113a",
+    flex: 1,
+  },
+  stepIndicatorHeader: {
+    fontFamily: "Manrope_600SemiBold",
+    fontSize: 10,
+    letterSpacing: 2,
+    color: "#757682",
+    textTransform: "uppercase",
+  },
+
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 48,
+  },
+  mainContent: { width: "100%" },
+
+  // ── Role Toggle ──
+  roleToggleContainer: {
+    flexDirection: "row",
+    backgroundColor: "#eeeeee",
+    borderRadius: 8,
+    padding: 4,
+    marginBottom: 28,
+    position: "relative",
+    height: 48,
+  },
+  roleToggleIndicator: {
+    position: "absolute",
+    top: 4,
+    bottom: 4,
+    width: "48%",
+    backgroundColor: "#ffffff",
+    borderRadius: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  roleToggleBtn: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+    zIndex: 1,
+  },
+  roleToggleText: {
+    fontFamily: "Manrope_600SemiBold",
+    fontSize: 11,
+    letterSpacing: 3,
+    color: "#757682",
+  },
+  roleToggleTextActive: {
+    fontFamily: "Manrope_700Bold",
+    color: "#00113a",
+  },
+
+  // ── Archival Header ──
+  archivalHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 16,
+    marginBottom: 20,
+  },
+  archivalAccent: {
+    width: 2,
+    height: 56,
+    backgroundColor: "#775a19",
+    marginTop: 4,
+  },
+  archivalLabel: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 9,
+    letterSpacing: 3,
+    color: "#775a19",
+    marginBottom: 6,
+  },
+  archivalTitle: {
+    fontFamily: "Newsreader_400Regular",
+    fontSize: 36,
+    lineHeight: 42,
+    color: "#00113a",
+  },
+
+   // ── Progress ──
+  progressSection: { marginBottom: 24 },
+  progressBarTrack: {
+    height: 2,
+    backgroundColor: "#e8e8e8",
+    borderRadius: 1,
+    overflow: "hidden",
+    marginBottom: 8,
+  },
+  progressBarFill: {
+    height: "100%",
+    backgroundColor: "#775a19",
+  },
+  progressDots: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  progressDot: {
+    width: 24,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: "#e8e8e8",
+  },
+  progressDotActive: {
+    backgroundColor: "#00113a",
+  },
+  progressText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 9,
+    letterSpacing: 3,
+    color: "#757682",
+    marginLeft: 8,
+  },
+
+  // ── Error ──
+  errorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#ffdad6",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    gap: 8,
+    marginBottom: 16,
+  },
+  errorText: {
+    fontFamily: "Manrope_600SemiBold",
+    fontSize: 12,
+    color: "#93000a",
+    flex: 1,
+  },
+
+  // ── Form Card ──
+  formCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    padding: 24,
+    shadowColor: "#00113a",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.04,
+    shadowRadius: 30,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: "rgba(232,232,232,0.3)",
+    gap: 28,
+  },
+
+  // ── Input ──
+  inputGroup: {},
+  inputLabel: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 9,
+    letterSpacing: 3,
+    color: "#444650",
+    marginBottom: 6,
+  },
+  input: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 16,
+    color: "#00113a",
+    borderBottomWidth: 2,
+    borderBottomColor: "#c5c6d2",
+    paddingVertical: 10,
+    paddingHorizontal: 0,
+  },
+  passwordRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  passwordInput: { flex: 1 },
+  eyeBtn: { paddingLeft: 12, paddingBottom: 4 },
+
+  // ── Strength ──
+  strengthRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+  strengthLabel: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 9,
+    letterSpacing: 2,
+    color: "#775a19",
+  },
+  strengthBars: { flexDirection: "row", gap: 3 },
+  strengthBar: {
+    width: 24,
+    height: 3,
+    borderRadius: 2,
+  },
+
+   // ── Match ──
+  matchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 8,
+  },
+  matchText: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 11,
+  },
+
+  // ── Dropdown Trigger ──
+  dropdownTrigger: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderBottomWidth: 2,
+    borderBottomColor: "#c5c6d2",
+    paddingVertical: 12,
+  },
+  dropdownTriggerText: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 16,
+    color: "#00113a",
+    flex: 1,
+  },
+  dropdownPlaceholder: {
+    color: "rgba(197,198,210,0.7)",
+  },
+
+  // ── Dropdown Overlay ──
+  dropdownOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 999,
+    justifyContent: "flex-end",
+  },
+  dropdownBackdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  dropdownContainer: {
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    maxHeight: "50%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  dropdownHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  dropdownHeaderText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 10,
+    letterSpacing: 3,
+    color: "#444650",
+  },
+  dropdownScroll: { paddingHorizontal: 8 },
+  dropdownItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginVertical: 2,
+  },
+  dropdownItemActive: {
+    backgroundColor: "rgba(119,90,25,0.08)",
+  },
+  dropdownItemText: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 15,
+    color: "#00113a",
+  },
+  dropdownItemTextActive: {
+    fontFamily: "Manrope_700Bold",
+    color: "#775a19",
+  },
+
+   // ── Face Step ──
+  faceStepContainer: { gap: 16 },
+  instructionsCard: {
+    backgroundColor: "#f3f3f3",
+    borderRadius: 12,
+    padding: 20,
+  },
+  instructionsTitle: {
+    fontFamily: "Newsreader_400Regular",
+    fontSize: 20,
+    color: "#00113a",
+    marginBottom: 8,
+  },
+  instructionsText: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 13,
+    color: "#444650",
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  instructionsList: { gap: 10 },
+  instructionItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  instructionItemText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 10,
+    letterSpacing: 1,
+    color: "#444650",
+    textTransform: "uppercase",
+  },
+
+  // ── Camera ──
+  cameraCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    overflow: "hidden",
+    shadowColor: "#00113a",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.06,
+    shadowRadius: 30,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: "rgba(232,232,232,0.3)",
+  },
+  cameraViewport: {
+    aspectRatio: 3 / 4,
+    backgroundColor: "#1a1c1c",
+    position: "relative",
+    overflow: "hidden",
+  },
+  camera: {
+    width: "100%",
+    height: "100%",
+  },
+  capturedPreview: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  faceGuideOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  faceGuideOval: {
+    width: 180,
+    height: 240,
+    borderRadius: 90,
+    borderWidth: 2,
+    borderColor: "rgba(233,193,118,0.6)",
+    borderStyle: "dashed",
+  },
+  liveBadge: {
+    position: "absolute",
+    top: 16,
+    left: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  liveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#ff4444",
+  },
+  liveText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 9,
+    letterSpacing: 3,
+    color: "#ffffff",
+  },
+  capturedBadge: {
+    position: "absolute",
+    top: 16,
+    left: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  capturedBadgeText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 9,
+    letterSpacing: 2,
+    color: "#4CAF50",
+  },
+  cameraActions: {
+    padding: 20,
+    alignItems: "center",
+    gap: 16,
+  },
+  cameraHint: {
+    fontFamily: "Newsreader_400Regular",
+    fontSize: 16,
+    color: "#00113a",
+    textAlign: "center",
+  },
+  cameraButtons: {
+    flexDirection: "row",
+    gap: 12,
+    width: "100%",
+    justifyContent: "center",
+  },
+  captureBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#002366",
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 4,
+    shadowColor: "#00113a",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  captureBtnText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 10,
+    letterSpacing: 2,
+    color: "#ffffff",
+  },
+  retakeBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#f9f9f9",
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "rgba(197,198,210,0.3)",
+  },
+  retakeBtnText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 10,
+    letterSpacing: 2,
+    color: "#00113a",
+  },
+  flipBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#f9f9f9",
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "rgba(197,198,210,0.3)",
+  },
+  flipBtnText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 10,
+    letterSpacing: 2,
+    color: "#00113a",
+  },
+  privacyNote: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+  privacyNoteText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 8,
+    letterSpacing: 3,
+    color: "#757682",
+  },
+
+  // ── Camera Permission ──
+  cameraPermissionCard: {
+    alignItems: "center",
+    gap: 16,
+    paddingVertical: 32,
+  },
+  permissionTitle: {
+    fontFamily: "Newsreader_400Regular",
+    fontSize: 22,
+    color: "#00113a",
+  },
+  permissionText: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 13,
+    color: "#444650",
+    textAlign: "center",
+    lineHeight: 20,
+    maxWidth: 280,
+  },
+  permissionBtn: {
+    backgroundColor: "#002366",
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 4,
+    marginTop: 8,
+  },
+  permissionBtnText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 11,
+    letterSpacing: 3,
+    color: "#ffffff",
+  },
+
+  // ── Actions ──
+  actionsSection: {
+    marginTop: 32,
+    gap: 20,
+  },
+  nextBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    backgroundColor: "#002366",
+    paddingVertical: 20,
+    borderRadius: 4,
+    shadowColor: "#00113a",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 6,
+  },
+  nextBtnText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 11,
+    letterSpacing: 4,
+    color: "#ffffff",
+  },
+  submitBtn: {
+    backgroundColor: "#00113a",
+    paddingVertical: 20,
+    borderRadius: 4,
+    alignItems: "center",
+    shadowColor: "#00113a",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 6,
+  },
+  submitBtnDisabled: { opacity: 0.7 },
+  submitBtnText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 11,
+    letterSpacing: 4,
+    color: "#ffffff",
+  },
+
+  // ── Login Link ──
+  loginLinkRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+  },
+  loginLinkText: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 13,
+    color: "#444650",
+  },
+  loginLinkAction: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 13,
+    color: "#775a19",
+  },
+
+  // ── Agreement ──
+  agreementText: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 10,
+    letterSpacing: 1,
+    color: "#757682",
+    textAlign: "center",
+    textTransform: "uppercase",
+  },
+
+  // ── Footer ──
+  footerCopyright: {
+    fontFamily: "Manrope_600SemiBold",
+    fontSize: 7,
+    letterSpacing: 3,
+    color: "#757682",
+    textAlign: "center",
+    opacity: 0.3,
+    marginTop: 48,
+  },
+});
+
+
