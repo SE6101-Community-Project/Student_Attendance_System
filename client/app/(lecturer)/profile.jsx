@@ -196,3 +196,99 @@ export default function LecturerProfileScreen() {
         department,
         designation,
       };
+
+       // Only include image if a new one was picked
+      if (profileImageBase64) {
+        payload.profileImage = profileImageBase64;
+      }
+
+      const res = await api.put('/lecturer/profile', payload);
+
+      if (res.data.success) {
+        // ── Update local profile state with response ──
+        setProfile((prev) => ({
+          ...prev,
+          name: res.data.data.name,
+          mobile: res.data.data.mobile,
+          department: res.data.data.department,
+          designation: res.data.data.designation,
+          profileImage: res.data.data.profileImage,
+        }));
+
+        setProfileImageBase64(null); // Clear staged base64
+        setEditing(false);
+        setShowDeptPicker(false);
+        setShowDesigPicker(false);
+
+        Alert.alert('Success', 'Profile updated successfully ✓');
+      }
+    } catch (err) {
+      Alert.alert(
+        'Error',
+        err.response?.data?.message || 'Failed to update profile'
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ══════════════════════════════════════
+  // PUT /api/lecturer/change-password
+  // ══════════════════════════════════════
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      Alert.alert('Error', 'Please fill all password fields');
+      return;
+    }
+    if (newPassword.length < 6) {
+      Alert.alert('Error', 'New password must be at least 6 characters');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Error', 'New passwords do not match');
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      const res = await api.put('/lecturer/change-password', {
+        currentPassword,
+        newPassword,
+      });
+
+      if (res.data.success) {
+        Alert.alert('Success', 'Password changed successfully ✓');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      }
+    } catch (err) {
+      Alert.alert(
+        'Error',
+        err.response?.data?.message || 'Password change failed'
+      );
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+
+  const fetchAttendanceSettings = async () => {
+    try {
+      setSettingsLoading(true);
+      setSettingsError('');
+      const res = await api.get('/settings/attendance');
+      if (res.data.success) {
+        const d = res.data.data;
+        setGpsRange(d.gpsRangeMeters.toString());
+        setTimeLimit(d.lateThresholdMinutes.toString());
+        setQrValidity(d.qrValidityMinutes.toString());
+        setSettingsLastSaved(d.updatedAt);
+      }
+    } catch (err) {
+      // Silently use defaults — settings may not exist yet
+      console.log('Settings fetch:', err.response?.data?.message || err.message);
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
