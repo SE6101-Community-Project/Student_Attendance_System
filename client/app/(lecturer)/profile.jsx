@@ -292,3 +292,117 @@ export default function LecturerProfileScreen() {
       setSettingsLoading(false);
     }
   };
+
+   // ── PUT /api/settings/attendance ──
+  const handleSaveAttendanceSettings = async () => {
+    setSettingsError('');
+
+    // ── Client-side validation ──
+    const gps = parseInt(gpsRange);
+    const late = parseInt(timeLimit);
+    const qr = parseInt(qrValidity);
+
+    if (isNaN(gps) || gps < 10 || gps > 1000) {
+      setSettingsError('GPS range must be between 10 and 1000 meters');
+      return;
+    }
+    if (isNaN(late) || late < 1 || late > 60) {
+      setSettingsError('Late threshold must be between 1 and 60 minutes');
+      return;
+    }
+    if (isNaN(qr) || qr < 5 || qr > 480) {
+      setSettingsError('QR validity must be between 5 and 480 minutes');
+      return;
+    }
+
+    setSettingsSaving(true);
+    try {
+      const res = await api.put('/settings/attendance', {
+        gpsRangeMeters: gps,
+        lateThresholdMinutes: late,
+        qrValidityMinutes: qr,
+      });
+
+      if (res.data.success) {
+        setSettingsLastSaved(res.data.data.updatedAt);
+        setSettingsSaved(true);
+        // Auto-reset success state after 3s
+        setTimeout(() => setSettingsSaved(false), 3000);
+      }
+    } catch (err) {
+      setSettingsError(
+        err.response?.data?.message || 'Failed to save settings'
+      );
+    } finally {
+      setSettingsSaving(false);
+    }
+  };
+
+  // ── DELETE /api/settings/attendance/reset ──
+  const handleResetAttendanceSettings = () => {
+    Alert.alert(
+      'Reset to Defaults',
+      'This will reset GPS range to 100m, late threshold to 15 minutes, and QR validity to 120 minutes.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reset',
+          style: 'destructive',
+          onPress: async () => {
+            setSettingsResetting(true);
+            setSettingsError('');
+            try {
+              const res = await api.delete('/settings/attendance/reset');
+              if (res.data.success) {
+                const d = res.data.data;
+                setGpsRange(d.gpsRangeMeters.toString());
+                setTimeLimit(d.lateThresholdMinutes.toString());
+                setQrValidity(d.qrValidityMinutes.toString());
+                setSettingsSaved(false);
+                setSettingsLastSaved(null);
+                Alert.alert('Reset', 'Attendance rules reset to defaults ✓');
+              }
+            } catch (err) {
+              setSettingsError(
+                err.response?.data?.message || 'Failed to reset settings'
+              );
+            } finally {
+              setSettingsResetting(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleLogout = () => {
+    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Sign Out', style: 'destructive', onPress: logout },
+    ]);
+  };
+
+  const handleCancelEdit = () => {
+    // ── Reset all editable fields back to profile values ──
+    setName(profile?.name || '');
+    setMobile(profile?.mobile || '');
+    setDepartment(profile?.department || '');
+    setDesignation(profile?.designation || '');
+    setProfileImageUri(profile?.profileImage || null);
+    setProfileImageBase64(null);
+    setShowDeptPicker(false);
+    setShowDesigPicker(false);
+    setEditing(false);
+  };
+
+  const getBorderColor = (field) =>
+    focusedField === field ? '#775a19' : '#c5c6d2';
+  const getLabelColor = (field) =>
+    focusedField === field ? '#775a19' : '#444650';
+
+  const getInitials = () => {
+    const n = profile?.name || name || 'L';
+    const parts = n.trim().split(' ');
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return parts[0][0].toUpperCase();
+  };
