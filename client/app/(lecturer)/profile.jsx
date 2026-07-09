@@ -715,3 +715,45 @@ export default function LecturerProfileScreen() {
           </View>
         </View>
       )}
+
+       {/* ── Account Info ── */}
+      <View style={styles.sectionCard}>
+        <View style={styles.sectionCardHeader}>
+          <Text style={styles.sectionCardTitle}>Account Info</Text>
+          <MaterialCommunityIcons name="information-outline" size={22} color="rgba(119,90,25,0.3)" />
+        </View>
+        <View style={styles.accountStatsGrid}>
+          <AccountStat
+            icon="calendar-check-outline"
+            label="JOINED"
+            value={
+              profile?.createdAt
+                ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                : '—'
+            }
+          />
+          <AccountStat
+            icon="login"
+            label="LAST LOGIN"
+            value={
+              profile?.lastLogin
+                ? new Date(profile.lastLogin).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                : '—'
+            }
+          />
+          <AccountStat
+            icon="shield-check-outline"
+            label="STATUS"
+            value={profile?.isActive ? 'Active' : 'Inactive'}
+            valueColor={profile?.isActive ? '#4CAF50' : '#ba1a1a'}
+          />
+          <AccountStat
+            icon="book-open-outline"
+            label="COURSES"
+            value={profile?.courses?.length || 0}
+          />
+        </View>
+      </View>
+    </>
+  );
+
