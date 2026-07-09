@@ -543,3 +543,175 @@ export default function LecturerProfileScreen() {
           )}
         </View>
 
+ {/* Full Name */}
+        <View style={styles.fieldGroup}>
+          <Text style={[styles.fieldLabel, { color: getLabelColor('name') }]}>FULL NAME</Text>
+          {editing ? (
+            <TextInput
+              style={[styles.fieldInput, { borderBottomColor: getBorderColor('name') }]}
+              value={name}
+              onChangeText={setName}
+              onFocus={() => setFocusedField('name')}
+              onBlur={() => setFocusedField(null)}
+              placeholder="Enter your full name"
+              placeholderTextColor="rgba(197,198,210,0.7)"
+              autoCapitalize="words"
+            />
+          ) : (
+            <Text style={styles.fieldValue}>{profile?.name || '—'}</Text>
+          )}
+        </View>
+
+        {/* Email — always read-only */}
+        <View style={styles.fieldGroup}>
+          <Text style={[styles.fieldLabel, { color: '#444650' }]}>EMAIL ADDRESS</Text>
+          <View style={styles.readOnlyField}>
+            <Text style={styles.fieldValueReadOnly}>{profile?.email || '—'}</Text>
+            <MaterialCommunityIcons name="lock-outline" size={14} color="#c5c6d2" />
+          </View>
+        </View>
+
+        {/* Mobile */}
+        <View style={styles.fieldGroup}>
+          <Text style={[styles.fieldLabel, { color: getLabelColor('mobile') }]}>MOBILE NUMBER</Text>
+          {editing ? (
+            <TextInput
+              style={[styles.fieldInput, { borderBottomColor: getBorderColor('mobile') }]}
+              value={mobile}
+              onChangeText={setMobile}
+              onFocus={() => setFocusedField('mobile')}
+              onBlur={() => setFocusedField(null)}
+              placeholder="+94XXXXXXXXX"
+              placeholderTextColor="rgba(197,198,210,0.7)"
+              keyboardType="phone-pad"
+            />
+          ) : (
+            <Text style={styles.fieldValue}>{profile?.mobile || '—'}</Text>
+          )}
+        </View>
+
+        {/* Lecturer ID — always read-only */}
+        <View style={styles.fieldGroup}>
+          <Text style={[styles.fieldLabel, { color: '#444650' }]}>LECTURER ID</Text>
+          <View style={styles.readOnlyField}>
+            <Text style={styles.fieldValueReadOnly}>{profile?.lecturerId || '—'}</Text>
+            <MaterialCommunityIcons name="lock-outline" size={14} color="#c5c6d2" />
+          </View>
+        </View>
+
+        {/* Department — dropdown when editing */}
+        <View style={styles.fieldGroup}>
+          <Text style={[styles.fieldLabel, { color: getLabelColor('dept') }]}>DEPARTMENT</Text>
+          {editing ? (
+            <>
+              <TouchableOpacity
+                style={[styles.dropdownTrigger, { borderBottomColor: getBorderColor('dept') }]}
+                onPress={() => { setShowDeptPicker(!showDeptPicker); setShowDesigPicker(false); }}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.dropdownTriggerText, !department && styles.dropdownTriggerPlaceholder]}>
+                  {department || 'Select department'}
+                </Text>
+                <MaterialCommunityIcons
+                  name={showDeptPicker ? 'chevron-up' : 'chevron-down'}
+                  size={18}
+                  color="#757682"
+                />
+              </TouchableOpacity>
+              <DropdownPicker
+                visible={showDeptPicker}
+                options={DEPARTMENTS}
+                selected={department}
+                onSelect={setDepartment}
+                onClose={() => setShowDeptPicker(false)}
+                label="SELECT DEPARTMENT"
+              />
+            </>
+          ) : (
+            <Text style={styles.fieldValue}>{profile?.department || '—'}</Text>
+          )}
+        </View>
+
+        {/* Designation — dropdown when editing */}
+        <View style={styles.fieldGroup}>
+          <Text style={[styles.fieldLabel, { color: getLabelColor('desig') }]}>DESIGNATION</Text>
+          {editing ? (
+            <>
+              <TouchableOpacity
+                style={[styles.dropdownTrigger, { borderBottomColor: getBorderColor('desig') }]}
+                onPress={() => { setShowDesigPicker(!showDesigPicker); setShowDeptPicker(false); }}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.dropdownTriggerText, !designation && styles.dropdownTriggerPlaceholder]}>
+                  {designation || 'Select designation'}
+                </Text>
+                <MaterialCommunityIcons
+                  name={showDesigPicker ? 'chevron-up' : 'chevron-down'}
+                  size={18}
+                  color="#757682"
+                />
+              </TouchableOpacity>
+              <DropdownPicker
+                visible={showDesigPicker}
+                options={DESIGNATIONS}
+                selected={designation}
+                onSelect={setDesignation}
+                onClose={() => setShowDesigPicker(false)}
+                label="SELECT DESIGNATION"
+              />
+            </>
+          ) : (
+            <Text style={styles.fieldValue}>{profile?.designation || '—'}</Text>
+          )}
+        </View>
+
+        {/* Save Button */}
+        {editing && (
+          <TouchableOpacity
+            style={[styles.primaryBtn, saving && styles.primaryBtnDisabled]}
+            onPress={handleSaveProfile}
+            activeOpacity={0.85}
+            disabled={saving}
+          >
+            {saving ? (
+              <ActivityIndicator color="#ffffff" size="small" />
+            ) : (
+              <>
+                <MaterialCommunityIcons name="content-save-outline" size={16} color="#ffffff" />
+                <Text style={styles.primaryBtnText}>SAVE CHANGES</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* ── My Courses ── */}
+      {profile?.courses && profile.courses.length > 0 && (
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionCardHeader}>
+            <View>
+              <Text style={styles.sectionCardTitle}>My Courses</Text>
+              <Text style={styles.sectionCardSubtitle}>
+                {profile.courses.length} course{profile.courses.length !== 1 ? 's' : ''} assigned
+              </Text>
+            </View>
+            <MaterialCommunityIcons name="book-open-variant" size={22} color="rgba(119,90,25,0.3)" />
+          </View>
+
+          <View style={styles.coursesList}>
+            {profile.courses.map((course, idx) => (
+              <View key={course._id || idx} style={styles.courseItem}>
+                <View style={styles.courseItemBadge}>
+                  <Text style={styles.courseItemCode}>{course.courseCode}</Text>
+                </View>
+                <View style={styles.courseItemInfo}>
+                  <Text style={styles.courseItemName} numberOfLines={1}>{course.courseName}</Text>
+                  <Text style={styles.courseItemMeta}>
+                    Semester {course.semester} · {course.credits} Credits
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
