@@ -757,3 +757,438 @@ export default function LecturerProfileScreen() {
     </>
   );
 
+  // ══════════════════════════════════════
+  // RENDER: SECURITY TAB
+  // ══════════════════════════════════════
+  const renderSecurityTab = () => (
+    <>
+      {/* ── Change Password ── */}
+      <View style={styles.sectionCard}>
+        <View style={styles.sectionCardHeader}>
+          <View>
+            <Text style={styles.sectionCardTitle}>Change Password</Text>
+            <Text style={styles.sectionCardSubtitle}>Update your account credentials</Text>
+          </View>
+          <MaterialCommunityIcons name="shield-key-outline" size={22} color="rgba(119,90,25,0.3)" />
+        </View>
+
+        {/* Current Password */}
+        <View style={styles.fieldGroup}>
+          <Text style={[styles.fieldLabel, { color: getLabelColor('currentPwd') }]}>CURRENT PASSWORD</Text>
+          <View style={styles.passwordRow}>
+            <TextInput
+              style={[styles.fieldInput, { flex: 1, borderBottomColor: getBorderColor('currentPwd') }]}
+              value={currentPassword}
+              onChangeText={setCurrentPassword}
+              onFocus={() => setFocusedField('currentPwd')}
+              onBlur={() => setFocusedField(null)}
+              secureTextEntry={!showCurrentPwd}
+              placeholder="••••••••"
+              placeholderTextColor="rgba(197,198,210,0.7)"
+              autoCapitalize="none"
+            />
+            <TouchableOpacity onPress={() => setShowCurrentPwd(!showCurrentPwd)} style={styles.eyeBtn}>
+              <MaterialCommunityIcons name={showCurrentPwd ? 'eye-off-outline' : 'eye-outline'} size={18} color="#757682" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* New Password */}
+        <View style={styles.fieldGroup}>
+          <Text style={[styles.fieldLabel, { color: getLabelColor('newPwd') }]}>NEW PASSWORD</Text>
+          <View style={styles.passwordRow}>
+            <TextInput
+              style={[styles.fieldInput, { flex: 1, borderBottomColor: getBorderColor('newPwd') }]}
+              value={newPassword}
+              onChangeText={setNewPassword}
+              onFocus={() => setFocusedField('newPwd')}
+              onBlur={() => setFocusedField(null)}
+              secureTextEntry={!showNewPwd}
+              placeholder="••••••••"
+              placeholderTextColor="rgba(197,198,210,0.7)"
+              autoCapitalize="none"
+            />
+            <TouchableOpacity onPress={() => setShowNewPwd(!showNewPwd)} style={styles.eyeBtn}>
+              <MaterialCommunityIcons name={showNewPwd ? 'eye-off-outline' : 'eye-outline'} size={18} color="#757682" />
+            </TouchableOpacity>
+          </View>
+          {newPassword.length > 0 && (
+            <>
+              <View style={styles.strengthRow}>
+                <MaterialCommunityIcons
+                  name={newPassword.length >= 6 ? 'check-circle-outline' : 'circle-outline'}
+                  size={12}
+                  color={newPassword.length >= 6 ? '#4CAF50' : '#c5c6d2'}
+                />
+                <Text style={[styles.strengthText, { color: newPassword.length >= 6 ? '#4CAF50' : '#757682' }]}>
+                  At least 6 characters
+                </Text>
+              </View>
+              <View style={styles.strengthBarRow}>
+                {[1, 2, 3, 4].map((i) => (
+                  <View key={i} style={[styles.strengthBar, { backgroundColor: newPassword.length >= i * 2 ? '#775a19' : '#e8e8e8' }]} />
+                ))}
+                <Text style={styles.strengthLabel}>
+                  {newPassword.length >= 8 ? 'STRONG' : newPassword.length >= 6 ? 'MODERATE' : 'WEAK'}
+                </Text>
+              </View>
+            </>
+          )}
+        </View>
+
+        {/* Confirm Password */}
+        <View style={styles.fieldGroup}>
+          <Text style={[styles.fieldLabel, { color: getLabelColor('confirmPwd') }]}>CONFIRM NEW PASSWORD</Text>
+          <View style={styles.passwordRow}>
+            <TextInput
+              style={[styles.fieldInput, { flex: 1, borderBottomColor: getBorderColor('confirmPwd') }]}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              onFocus={() => setFocusedField('confirmPwd')}
+              onBlur={() => setFocusedField(null)}
+              secureTextEntry={!showConfirmPwd}
+              placeholder="••••••••"
+              placeholderTextColor="rgba(197,198,210,0.7)"
+              autoCapitalize="none"
+            />
+            <TouchableOpacity onPress={() => setShowConfirmPwd(!showConfirmPwd)} style={styles.eyeBtn}>
+              <MaterialCommunityIcons name={showConfirmPwd ? 'eye-off-outline' : 'eye-outline'} size={18} color="#757682" />
+            </TouchableOpacity>
+          </View>
+          {confirmPassword.length > 0 && (
+            <View style={styles.matchRow}>
+              <MaterialCommunityIcons
+                name={newPassword === confirmPassword ? 'check-circle-outline' : 'close-circle-outline'}
+                size={12}
+                color={newPassword === confirmPassword ? '#4CAF50' : '#ba1a1a'}
+              />
+              <Text style={[styles.matchText, { color: newPassword === confirmPassword ? '#4CAF50' : '#ba1a1a' }]}>
+                {newPassword === confirmPassword ? 'Passwords match' : 'Passwords do not match'}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <TouchableOpacity
+          style={[styles.primaryBtn, changingPassword && styles.primaryBtnDisabled]}
+          onPress={handleChangePassword}
+          activeOpacity={0.85}
+          disabled={changingPassword}
+        >
+          {changingPassword ? (
+            <ActivityIndicator color="#ffffff" size="small" />
+          ) : (
+            <>
+              <MaterialCommunityIcons name="shield-key-outline" size={16} color="#ffffff" />
+              <Text style={styles.primaryBtnText}>UPDATE PASSWORD</Text>
+            </>
+          )}
+        </TouchableOpacity>
+      </View>
+    </>
+  );
+
+
+  const renderAttendanceRulesTab = () => (
+    <View style={styles.sectionCard}>
+      {/* ── Header ── */}
+      <View style={styles.sectionCardHeader}>
+        <View>
+          <Text style={styles.sectionCardTitle}>Attendance Rules</Text>
+          <Text style={styles.sectionCardSubtitle}>
+            Default values for new QR sessions
+          </Text>
+        </View>
+        <MaterialCommunityIcons
+          name="ruler-square"
+          size={22}
+          color="rgba(119,90,25,0.3)"
+        />
+      </View>
+
+      {/* ── Loading Skeleton ── */}
+      {settingsLoading ? (
+        <View style={styles.settingsLoadingWrap}>
+          <ActivityIndicator size="small" color="#775a19" />
+          <Text style={styles.settingsLoadingText}>
+            Loading saved settings...
+          </Text>
+        </View>
+      ) : (
+        <>
+          {/* ── Error Banner ── */}
+          {settingsError ? (
+            <View style={styles.settingsErrorBanner}>
+              <MaterialCommunityIcons
+                name="alert-circle-outline"
+                size={16}
+                color="#ba1a1a"
+              />
+              <Text style={styles.settingsErrorText}>{settingsError}</Text>
+              <TouchableOpacity
+                onPress={() => setSettingsError('')}
+                style={styles.settingsErrorClose}
+              >
+                <MaterialCommunityIcons name="close" size={14} color="#ba1a1a" />
+              </TouchableOpacity>
+            </View>
+          ) : null}
+
+          {/* ── Last Saved Info ── */}
+          {settingsLastSaved && (
+            <View style={styles.lastSavedRow}>
+              <MaterialCommunityIcons
+                name="clock-check-outline"
+                size={12}
+                color="#4CAF50"
+              />
+              <Text style={styles.lastSavedText}>
+                Last saved:{' '}
+                {new Date(settingsLastSaved).toLocaleString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </Text>
+            </View>
+          )}
+
+          {/* ── GPS Range ── */}
+          <View style={styles.settingRow}>
+            <View style={styles.settingRowHeader}>
+              <View style={styles.settingRowLeft}>
+                <View style={[styles.settingIcon, { backgroundColor: 'rgba(76,175,80,0.1)' }]}>
+                  <MaterialCommunityIcons
+                    name="map-marker-radius"
+                    size={18}
+                    color="#4CAF50"
+                  />
+                </View>
+                <View>
+                  <Text style={styles.settingLabel}>GPS RANGE</Text>
+                  <Text style={styles.settingDesc}>
+                    Students must be within this radius
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.settingValueBadge}>
+                <Text style={styles.settingValueBadgeText}>
+                  {gpsRange || '100'}m
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.settingInputRow}>
+              <TextInput
+                style={[
+                  styles.settingInput,
+                  {
+                    borderBottomColor: getBorderColor('gps'),
+                    color:
+                      parseInt(gpsRange) < 10 || parseInt(gpsRange) > 1000
+                        ? '#ba1a1a'
+                        : '#00113a',
+                  },
+                ]}
+                value={gpsRange}
+                onChangeText={(v) => {
+                  setGpsRange(v);
+                  setSettingsError('');
+                  setSettingsSaved(false);
+                }}
+                onFocus={() => setFocusedField('gps')}
+                onBlur={() => setFocusedField(null)}
+                keyboardType="numeric"
+                placeholder="100"
+                placeholderTextColor="rgba(197,198,210,0.7)"
+              />
+              <Text style={styles.settingUnit}>meters</Text>
+            </View>
+            <Text style={styles.settingHint}>Min: 10m · Max: 1000m</Text>
+          </View>
+
+          {/* ── Divider ── */}
+          <View style={styles.settingDivider} />
+
+          {/* ── Late Threshold ── */}
+          <View style={styles.settingRow}>
+            <View style={styles.settingRowHeader}>
+              <View style={styles.settingRowLeft}>
+                <View style={[styles.settingIcon, { backgroundColor: 'rgba(245,158,11,0.1)' }]}>
+                  <MaterialCommunityIcons
+                    name="clock-alert-outline"
+                    size={18}
+                    color="#F59E0B"
+                  />
+                </View>
+                <View>
+                  <Text style={styles.settingLabel}>LATE THRESHOLD</Text>
+                  <Text style={styles.settingDesc}>
+                    Minutes after start = marked late
+                  </Text>
+                </View>
+              </View>
+              <View style={[styles.settingValueBadge, { backgroundColor: 'rgba(245,158,11,0.1)' }]}>
+                <Text style={[styles.settingValueBadgeText, { color: '#F59E0B' }]}>
+                  {timeLimit || '15'} min
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.settingInputRow}>
+              <TextInput
+                style={[
+                  styles.settingInput,
+                  {
+                    borderBottomColor: getBorderColor('time'),
+                    color:
+                      parseInt(timeLimit) < 1 || parseInt(timeLimit) > 60
+                        ? '#ba1a1a'
+                        : '#00113a',
+                  },
+                ]}
+                value={timeLimit}
+                onChangeText={(v) => {
+                  setTimeLimit(v);
+                  setSettingsError('');
+                  setSettingsSaved(false);
+                }}
+                onFocus={() => setFocusedField('time')}
+                onBlur={() => setFocusedField(null)}
+                keyboardType="numeric"
+                placeholder="15"
+                placeholderTextColor="rgba(197,198,210,0.7)"
+              />
+              <Text style={styles.settingUnit}>minutes</Text>
+            </View>
+            <Text style={styles.settingHint}>Min: 1 min · Max: 60 min</Text>
+          </View>
+
+          {/* ── Divider ── */}
+          <View style={styles.settingDivider} />
+
+          {/* ── QR Validity ── */}
+          <View style={styles.settingRow}>
+            <View style={styles.settingRowHeader}>
+              <View style={styles.settingRowLeft}>
+                <View style={[styles.settingIcon, { backgroundColor: 'rgba(0,35,102,0.08)' }]}>
+                  <MaterialCommunityIcons
+                    name="qrcode-scan"
+                    size={18}
+                    color="#002366"
+                  />
+                </View>
+                <View>
+                  <Text style={styles.settingLabel}>QR CODE VALIDITY</Text>
+                  <Text style={styles.settingDesc}>
+                    How long the QR code stays active
+                  </Text>
+                </View>
+              </View>
+              <View style={[styles.settingValueBadge, { backgroundColor: 'rgba(0,35,102,0.08)' }]}>
+                <Text style={[styles.settingValueBadgeText, { color: '#002366' }]}>
+                  {qrValidity || '120'} min
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.settingInputRow}>
+              <TextInput
+                style={[
+                  styles.settingInput,
+                  {
+                    borderBottomColor: getBorderColor('qr'),
+                    color:
+                      parseInt(qrValidity) < 5 || parseInt(qrValidity) > 480
+                        ? '#ba1a1a'
+                        : '#00113a',
+                  },
+                ]}
+                value={qrValidity}
+                onChangeText={(v) => {
+                  setQrValidity(v);
+                  setSettingsError('');
+                  setSettingsSaved(false);
+                }}
+                onFocus={() => setFocusedField('qr')}
+                onBlur={() => setFocusedField(null)}
+                keyboardType="numeric"
+                placeholder="120"
+                placeholderTextColor="rgba(197,198,210,0.7)"
+              />
+              <Text style={styles.settingUnit}>minutes</Text>
+            </View>
+            <Text style={styles.settingHint}>Min: 5 min · Max: 480 min (8 hours)</Text>
+          </View>
+
+          {/* ── Info Note ── */}
+          <View style={styles.infoNote}>
+            <MaterialCommunityIcons
+              name="information-outline"
+              size={14}
+              color="#775a19"
+            />
+            <Text style={styles.infoNoteText}>
+              These values are loaded automatically when you create a new QR
+              session. You can still override them per session. Existing sessions
+              are not affected.
+            </Text>
+          </View>
+
+          {/* ── Save Button ── */}
+          <TouchableOpacity
+            style={[
+              styles.primaryBtn,
+              (settingsSaving || settingsResetting) && styles.primaryBtnDisabled,
+              settingsSaved && styles.primaryBtnSuccess,
+            ]}
+            onPress={handleSaveAttendanceSettings}
+            activeOpacity={0.85}
+            disabled={settingsSaving || settingsResetting}
+          >
+            {settingsSaving ? (
+              <ActivityIndicator color="#ffffff" size="small" />
+            ) : settingsSaved ? (
+              <>
+                <MaterialCommunityIcons
+                  name="check-circle-outline"
+                  size={16}
+                  color="#ffffff"
+                />
+                <Text style={styles.primaryBtnText}>SAVED SUCCESSFULLY ✓</Text>
+              </>
+            ) : (
+              <>
+                <MaterialCommunityIcons
+                  name="content-save-outline"
+                  size={16}
+                  color="#ffffff"
+                />
+                <Text style={styles.primaryBtnText}>SAVE RULES</Text>
+              </>
+            )}
+          </TouchableOpacity>
+
+          {/* ── Reset Button ── */}
+          <TouchableOpacity
+            style={[
+              styles.resetBtn,
+              settingsResetting && { opacity: 0.5 },
+            ]}
+            onPress={handleResetAttendanceSettings}
+            disabled={settingsResetting}
+            activeOpacity={0.7}
+          >
+            {settingsResetting ? (
+              <ActivityIndicator size="small" color="#775a19" />
+            ) : (
+              <Text style={styles.resetBtnText}>Reset to Defaults</Text>
+            )}
+          </TouchableOpacity>
+        </>
+      )}
+    </View>
+  );
+
+
