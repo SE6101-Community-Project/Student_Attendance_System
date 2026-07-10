@@ -1290,5 +1290,271 @@ export default function LecturerProfileScreen() {
   );
 }
 
+// ── Subcomponents ──
+const AccountStat = ({ icon, label, value, valueColor }) => (
+  <View style={styles.accountStat}>
+    <MaterialCommunityIcons name={icon} size={18} color="#775a19" />
+    <Text style={styles.accountStatLabel}>{label}</Text>
+    <Text style={[styles.accountStatValue, valueColor && { color: valueColor }]}>{value}</Text>
+  </View>
+);
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#f9f9f9' },
+  safeArea: { flex: 1 },
+
+  // Header
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14, backgroundColor: 'rgba(255,255,255,0.95)', borderBottomWidth: 1, borderBottomColor: 'rgba(197,198,210,0.3)' },
+  backBtn: { padding: 4, marginRight: 12 },
+  headerTitle: { fontFamily: 'Newsreader_400Regular', fontSize: 20, color: '#00113a', flex: 1 },
+  logoutHeaderBtn: { width: 36, height: 36, borderRadius: 8, backgroundColor: 'rgba(186,26,26,0.06)', justifyContent: 'center', alignItems: 'center' },
+
+  // Tabs
+  tabsScroll: { borderBottomWidth: 1, borderBottomColor: 'rgba(197,198,210,0.2)', flexGrow: 0, height: 60 },
+  tabsContent: { paddingHorizontal: 16, gap: 4, alignItems: 'center' },
+  tab: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 12, paddingHorizontal: 14, borderBottomWidth: 2, borderBottomColor: 'transparent', marginRight: 2 },
+  tabActive: { borderBottomColor: '#775a19' },
+  tabText: { fontFamily: 'Manrope_700Bold', fontSize: 9, letterSpacing: 2, color: '#757682' },
+  tabTextActive: { color: '#00113a' },
+
+  scrollContent: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40 },
+
+  // Archival Header
+  archivalHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 14, marginBottom: 24 },
+  archivalAccent: { width: 2, height: 48, backgroundColor: '#775a19', marginTop: 2 },
+  archivalLabel: { fontFamily: 'Manrope_700Bold', fontSize: 9, letterSpacing: 3, color: '#775a19', marginBottom: 4 },
+  archivalTitle: { fontFamily: 'Newsreader_400Regular', fontSize: 30, color: '#00113a' },
+
+  // Profile Hero Card
+  profileCard: { backgroundColor: '#00113a', borderRadius: 16, padding: 24, marginBottom: 16, overflow: 'hidden' },
+  profileTop: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 16 },
+  avatarWrapper: { position: 'relative' },
+  avatarLarge: { width: 72, height: 72, borderRadius: 36, backgroundColor: '#002366', justifyContent: 'center', alignItems: 'center', borderWidth: 3, borderColor: 'rgba(255,255,255,0.15)' },
+  avatarImage: { width: '100%', height: '100%', borderRadius: 36 },
+  avatarLargeText: { fontFamily: 'Manrope_700Bold', fontSize: 26, color: '#ffffff' },
+  activeIndicator: { position: 'absolute', bottom: 2, right: 2, width: 16, height: 16, borderRadius: 8, backgroundColor: '#4CAF50', borderWidth: 3, borderColor: '#00113a' },
+
+  // Camera overlay on avatar when editing
+  avatarEditOverlay: {
+    position: 'absolute', bottom: 0, right: 0, width: 26, height: 26,
+    borderRadius: 13, backgroundColor: '#775a19', justifyContent: 'center',
+    alignItems: 'center', borderWidth: 2, borderColor: '#00113a',
+  },
+
+  profileNameSection: { flex: 1 },
+  profileName: { fontFamily: 'Newsreader_400Regular', fontSize: 22, color: '#ffffff', marginBottom: 2 },
+  profileDesignation: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 6 },
+  verifiedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  verifiedText: { fontFamily: 'Manrope_700Bold', fontSize: 8, letterSpacing: 2 },
+  infoPills: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
+  infoPill: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,255,255,0.08)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20 },
+  infoPillText: { fontFamily: 'Manrope_600SemiBold', fontSize: 11, color: 'rgba(255,255,255,0.7)' },
+
+  // Change photo note
+  changePhotoRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12,
+    paddingTop: 12, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)',
+  },
+  changePhotoText: {
+    fontFamily: 'Manrope_400Regular', fontSize: 11,
+    color: 'rgba(233,193,118,0.8)', flex: 1,
+  },
+
+  // Section Card
+  sectionCard: { backgroundColor: '#ffffff', borderRadius: 12, padding: 20, marginBottom: 16, shadowColor: '#00113a', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.04, shadowRadius: 12, elevation: 3, borderWidth: 1, borderColor: 'rgba(197,198,210,0.2)', gap: 20 },
+  sectionCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  sectionCardTitle: { fontFamily: 'Newsreader_400Regular', fontSize: 20, color: '#00113a' },
+  sectionCardSubtitle: { fontFamily: 'Manrope_400Regular', fontSize: 11, color: '#757682', marginTop: 2 },
+  editIconBtn: { width: 36, height: 36, borderRadius: 8, backgroundColor: 'rgba(119,90,25,0.08)', justifyContent: 'center', alignItems: 'center' },
+
+  // Fields
+  fieldGroup: { gap: 6 },
+  fieldLabel: { fontFamily: 'Manrope_700Bold', fontSize: 9, letterSpacing: 3, color: '#444650' },
+  fieldInput: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#00113a', borderBottomWidth: 2, borderBottomColor: '#c5c6d2', paddingVertical: 8 },
+  fieldValue: { fontFamily: 'Manrope_600SemiBold', fontSize: 15, color: '#00113a', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(197,198,210,0.15)' },
+  readOnlyField: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(197,198,210,0.15)' },
+  fieldValueReadOnly: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#757682', flex: 1 },
+  inputWithIcon: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+
+  // Dropdown trigger
+  dropdownTrigger: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 2, borderBottomColor: '#c5c6d2', paddingVertical: 8 },
+  dropdownTriggerText: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#00113a', flex: 1 },
+  dropdownTriggerPlaceholder: { color: 'rgba(197,198,210,0.7)' },
+
+  // Dropdown list (inline)
+  dropdownContainer: { backgroundColor: '#f9f9f9', borderRadius: 10, borderWidth: 1, borderColor: 'rgba(197,198,210,0.3)', overflow: 'hidden', marginTop: 4 },
+  dropdownHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(197,198,210,0.2)' },
+  dropdownHeaderText: { fontFamily: 'Manrope_700Bold', fontSize: 8, letterSpacing: 3, color: '#757682' },
+  dropdownItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(197,198,210,0.1)' },
+  dropdownItemActive: { backgroundColor: 'rgba(119,90,25,0.06)' },
+  dropdownItemText: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#444650' },
+  dropdownItemTextActive: { fontFamily: 'Manrope_700Bold', color: '#775a19' },
+
+  // Password
+  passwordRow: { flexDirection: 'row', alignItems: 'center' },
+  eyeBtn: { paddingLeft: 12, paddingBottom: 4 },
+  strengthRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
+  strengthText: { fontFamily: 'Manrope_400Regular', fontSize: 10, letterSpacing: 0.5 },
+  strengthBarRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 6 },
+  strengthBar: { width: 24, height: 3, borderRadius: 2 },
+  strengthLabel: { fontFamily: 'Manrope_700Bold', fontSize: 8, letterSpacing: 2, color: '#775a19', marginLeft: 8 },
+  matchRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
+  matchText: { fontFamily: 'Manrope_400Regular', fontSize: 10 },
+
+  // Slider
+  sliderTrack: { height: 4, backgroundColor: '#e2e2e2', borderRadius: 2, overflow: 'hidden', marginTop: 8 },
+  sliderFill: { height: '100%', backgroundColor: '#775a19', borderRadius: 2 },
+  sliderControls: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 },
+  sliderValueText: { fontFamily: 'Manrope_700Bold', fontSize: 9, letterSpacing: 1, color: '#757682', textTransform: 'uppercase' },
+
+  // Info Note
+  infoNote: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, backgroundColor: 'rgba(119,90,25,0.06)', paddingHorizontal: 14, paddingVertical: 12, borderRadius: 6, borderLeftWidth: 2, borderLeftColor: '#775a19' },
+  infoNoteText: { fontFamily: 'Manrope_400Regular', fontSize: 11, color: '#444650', lineHeight: 17, flex: 1 },
+
+  // Courses
+  coursesList: { gap: 8 },
+  courseItem: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, backgroundColor: '#f3f3f3', borderRadius: 8 },
+  courseItemBadge: { backgroundColor: 'rgba(0,35,102,0.08)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 4 },
+  courseItemCode: { fontFamily: 'Manrope_700Bold', fontSize: 10, letterSpacing: 1, color: '#002366' },
+  courseItemInfo: { flex: 1 },
+  courseItemName: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: '#00113a' },
+  courseItemMeta: { fontFamily: 'Manrope_400Regular', fontSize: 10, color: '#757682', marginTop: 2 },
+
+  // Account Stats
+  accountStatsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  accountStat: { flex: 1, minWidth: '45%', backgroundColor: '#f9f9f9', borderRadius: 10, padding: 14, gap: 6, alignItems: 'center' },
+  accountStatLabel: { fontFamily: 'Manrope_700Bold', fontSize: 8, letterSpacing: 2, color: '#757682', textTransform: 'uppercase' },
+  accountStatValue: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: '#00113a', textAlign: 'center' },
+
+  // Buttons
+  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#002366', paddingVertical: 16, borderRadius: 4, shadowColor: '#00113a', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 10, elevation: 4 },
+  primaryBtnDisabled: { opacity: 0.7 },
+  primaryBtnText: { fontFamily: 'Manrope_700Bold', fontSize: 11, letterSpacing: 3, color: '#ffffff' },
+  resetBtn: { alignItems: 'center' },
+  resetBtnText: { fontFamily: 'Manrope_700Bold', fontSize: 11, letterSpacing: 2, color: '#775a19', textDecorationLine: 'underline', textDecorationColor: 'rgba(119,90,25,0.3)' },
+
+  // Logout
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 4, borderWidth: 1, borderColor: 'rgba(186,26,26,0.25)', backgroundColor: 'rgba(186,26,26,0.04)' },
+  logoutBtnText: { fontFamily: 'Manrope_700Bold', fontSize: 11, letterSpacing: 3, color: '#ba1a1a' },
+  logoutHint: { fontFamily: 'Manrope_400Regular', fontSize: 10, color: '#c5c6d2', textAlign: 'center' },
+
+  footerText: { fontFamily: 'Manrope_600SemiBold', fontSize: 7, letterSpacing: 3, color: '#757682', textAlign: 'center', opacity: 0.3, marginTop: 8 },
+  settingsLoadingWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    paddingVertical: 24,
+  },
+  settingsLoadingText: {
+    fontFamily: 'Manrope_400Regular',
+    fontSize: 12,
+    color: '#757682',
+  },
+  settingsErrorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#ffdad6',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  settingsErrorText: {
+    fontFamily: 'Manrope_600SemiBold',
+    fontSize: 12,
+    color: '#93000a',
+    flex: 1,
+  },
+  settingsErrorClose: { padding: 2 },
+  lastSavedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  lastSavedText: {
+    fontFamily: 'Manrope_400Regular',
+    fontSize: 10,
+    color: '#4CAF50',
+    letterSpacing: 0.5,
+  },
+  settingRow: { gap: 10 },
+  settingRowHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  settingRowLeft: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    flex: 1,
+  },
+  settingIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  settingLabel: {
+    fontFamily: 'Manrope_700Bold',
+    fontSize: 9,
+    letterSpacing: 2,
+    color: '#444650',
+    marginBottom: 2,
+  },
+  settingDesc: {
+    fontFamily: 'Manrope_400Regular',
+    fontSize: 11,
+    color: '#757682',
+  },
+  settingValueBadge: {
+    backgroundColor: 'rgba(76,175,80,0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  settingValueBadgeText: {
+    fontFamily: 'Manrope_700Bold',
+    fontSize: 12,
+    color: '#4CAF50',
+  },
+  settingInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  settingInput: {
+    flex: 1,
+    fontFamily: 'Manrope_400Regular',
+    fontSize: 20,
+    color: '#00113a',
+    borderBottomWidth: 2,
+    borderBottomColor: '#c5c6d2',
+    paddingVertical: 6,
+  },
+  settingUnit: {
+    fontFamily: 'Manrope_700Bold',
+    fontSize: 10,
+    letterSpacing: 1,
+    color: '#757682',
+    textTransform: 'uppercase',
+  },
+  settingHint: {
+    fontFamily: 'Manrope_400Regular',
+    fontSize: 9,
+    color: '#c5c6d2',
+    letterSpacing: 0.5,
+  },
+  settingDivider: {
+    height: 1,
+    backgroundColor: 'rgba(197,198,210,0.2)',
+  },
+  primaryBtnSuccess: {
+    backgroundColor: '#4CAF50',
+  },
+});
+
 
 
