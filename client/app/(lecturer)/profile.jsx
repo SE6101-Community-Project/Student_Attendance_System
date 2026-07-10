@@ -1192,3 +1192,103 @@ export default function LecturerProfileScreen() {
   );
 
 
+   // ══════════════════════════════════════
+  // MAIN RENDER
+  // ══════════════════════════════════════
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#f9f9f9" />
+
+      <SafeAreaView style={styles.safeArea}>
+        {/* ── Header ── */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
+            <MaterialCommunityIcons name="arrow-left" size={24} color="#00113a" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Profile & Settings</Text>
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutHeaderBtn} activeOpacity={0.7}>
+            <MaterialCommunityIcons name="logout" size={18} color="#ba1a1a" />
+          </TouchableOpacity>
+        </View>
+
+        {/* ── Tabs ── */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.tabsScroll}
+          contentContainerStyle={styles.tabsContent}
+        >
+          {PROFILE_TABS.map((tab) => (
+            <TouchableOpacity
+              key={tab}
+              style={[styles.tab, activeTab === tab && styles.tabActive]}
+              onPress={() => setActiveTab(tab)}
+              activeOpacity={0.7}
+            >
+              <MaterialCommunityIcons
+                name={
+                  tab === 'Profile' ? 'account-circle-outline' :
+                  tab === 'Security' ? 'shield-lock-outline' :
+                  'ruler-square'
+                }
+                size={14}
+                color={activeTab === tab ? '#00113a' : '#757682'}
+              />
+              <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
+                {tab.toUpperCase()}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Animated.View style={{ opacity: fadeIn, transform: [{ translateY: slideUp }] }}>
+            {/* ── Archival Header ── */}
+            <View style={styles.archivalHeader}>
+              <View style={styles.archivalAccent} />
+              <View>
+                <Text style={styles.archivalLabel}>
+                  {activeTab === 'Profile' ? 'ACADEMIC RECORD' :
+                   activeTab === 'Security' ? 'SECURITY PROTOCOL' :
+                   'CONFIGURATION'}
+                </Text>
+                <Text style={styles.archivalTitle}>
+                  {activeTab === 'Profile' ? 'Lecturer Profile' :
+                   activeTab === 'Security' ? 'Account Security' :
+                   'Attendance Rules'}
+                </Text>
+              </View>
+            </View>
+
+            {/* ── Tab Content ── */}
+            {activeTab === 'Profile' && renderProfileTab()}
+            {activeTab === 'Security' && renderSecurityTab()}
+            {activeTab === 'Attendance Rules' && renderAttendanceRulesTab()}
+
+            {/* ── Sign Out ── */}
+            <View style={styles.sectionCard}>
+              <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.7}>
+                <MaterialCommunityIcons name="logout" size={18} color="#ba1a1a" />
+                <Text style={styles.logoutBtnText}>SIGN OUT</Text>
+              </TouchableOpacity>
+              <Text style={styles.logoutHint}>
+                You will be redirected to the login screen
+              </Text>
+            </View>
+
+            <Text style={styles.footerText}>
+              © SABARAGAMUWA UNIVERSITY OF SRI LANKA
+            </Text>
+          </Animated.View>
+        </ScrollView>
+      </SafeAreaView>
+    </View>
+  );
+}
+
+
+
