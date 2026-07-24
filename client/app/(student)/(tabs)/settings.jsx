@@ -420,3 +420,295 @@ export default function SettingsScreen() {
             danger
           />
         </View>
+
+         {/* ── Logout ── */}
+        <TouchableOpacity
+          style={styles.logoutBtn}
+          onPress={handleLogout}
+          activeOpacity={0.85}
+        >
+          <View style={styles.logoutBtnInner}>
+            <View style={styles.logoutIconWrap}>
+              <MaterialCommunityIcons
+                name="logout"
+                size={20}
+                color="#ba1a1a"
+              />
+            </View>
+            <View style={styles.logoutTextWrap}>
+              <Text style={styles.logoutTitle}>Logout</Text>
+              <Text style={styles.logoutSub}>
+                End current session on this device
+              </Text>
+            </View>
+          </View>
+          <View style={styles.logoutArrow}>
+            <MaterialCommunityIcons
+              name="chevron-right"
+              size={16}
+              color="#ba1a1a"
+            />
+          </View>
+        </TouchableOpacity>
+
+        {/* ── App Info ── */}
+        <View style={styles.appInfoCard}>
+          <View style={styles.appInfoIcon}>
+            <Text style={styles.appInfoIconText}>S</Text>
+          </View>
+          <Text style={styles.appInfoName}>SUSL Attendance</Text>
+          <Text style={styles.appInfoVersion}>
+            Version 2.4.0 · Build 2024.12
+          </Text>
+          <View style={styles.appInfoBadge}>
+            <MaterialCommunityIcons
+              name="shield-lock-outline"
+              size={10}
+              color="#775a19"
+            />
+            <Text style={styles.appInfoBadgeText}>SECURE ACADEMIC LINK</Text>
+          </View>
+        </View>
+
+        <Text style={styles.footerText}>
+          © SABARAGAMUWA UNIVERSITY OF SRI LANKA
+        </Text>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+// ══════════════════════════════════════════════════════════
+// STYLES
+// ══════════════════════════════════════════════════════════
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#f9f9f9" },
+
+  // ── Header ──
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    backgroundColor: "rgba(255,255,255,0.95)",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(197,198,210,0.2)",
+  },
+  backBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: "#f3f3f3",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerCenter: { alignItems: "center", gap: 2 },
+  headerLabel: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 8,
+    letterSpacing: 2.5,
+    color: "#775a19",
+  },
+  headerTitle: {
+    fontFamily: "Newsreader_400Regular",
+    fontSize: 20,
+    color: "#00113a",
+  },
+
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 120,
+    gap: 10,
+  },
+
+  // ── Profile Card ──
+  profileCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    backgroundColor: "#ffffff",
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 6,
+    borderWidth: 1,
+    borderColor: "rgba(197,198,210,0.2)",
+    shadowColor: "#00113a",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  profileAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 10,
+    backgroundColor: "#002366",
+    justifyContent: "center",
+    alignItems: "center",
+    flexShrink: 0,
+  },
+  profileAvatarText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 22,
+    color: "#ffffff",
+  },
+  profileInfo: { flex: 1 },
+  archivalRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 3,
+  },
+  archivalAccent: { width: 2, height: 12, backgroundColor: "#775a19" },
+  profileRole: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 8,
+    letterSpacing: 2,
+    color: "#775a19",
+  },
+  profileName: {
+    fontFamily: "Newsreader_400Regular",
+    fontSize: 20,
+    color: "#00113a",
+    marginBottom: 2,
+  },
+  profileSub: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 11,
+    color: "#757682",
+  },
+  editProfileBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: "rgba(119,90,25,0.08)",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(119,90,25,0.12)",
+    flexShrink: 0,
+  },
+
+  // ── Section Header ──
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 6,
+    marginBottom: 8,
+  },
+  sectionAccent: {
+    width: 2,
+    height: 16,
+    backgroundColor: "#775a19",
+    borderRadius: 1,
+  },
+  sectionTitle: {
+    fontFamily: "Newsreader_400Regular",
+    fontSize: 18,
+    color: "#00113a",
+  },
+
+  // ── Card ──
+  card: {
+    backgroundColor: "#ffffff",
+    borderRadius: 14,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(197,198,210,0.2)",
+    shadowColor: "#00113a",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.03,
+    shadowRadius: 10,
+    elevation: 2,
+    marginBottom: 6,
+  },
+  dangerCard: {
+    borderColor: "rgba(186,26,26,0.15)",
+  },
+  cardDivider: {
+    height: 1,
+    backgroundColor: "rgba(197,198,210,0.1)",
+    marginHorizontal: 16,
+  },
+
+  // ── Toggle Row ──
+  toggleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  toggleRowLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    flex: 1,
+  },
+  toggleIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 9,
+    backgroundColor: "rgba(0,17,58,0.05)",
+    justifyContent: "center",
+    alignItems: "center",
+    flexShrink: 0,
+  },
+  toggleTextWrap: { flex: 1 },
+  toggleLabel: {
+    fontFamily: "Manrope_600SemiBold",
+    fontSize: 13,
+    color: "#00113a",
+    marginBottom: 1,
+  },
+  toggleSub: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 11,
+    color: "#757682",
+    lineHeight: 15,
+  },
+
+  // ── Action Row ──
+  actionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  actionIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 9,
+    backgroundColor: "rgba(0,17,58,0.05)",
+    justifyContent: "center",
+    alignItems: "center",
+    flexShrink: 0,
+  },
+  actionIconDanger: {
+    backgroundColor: "rgba(186,26,26,0.06)",
+  },
+  actionTextWrap: { flex: 1 },
+  actionLabel: {
+    fontFamily: "Manrope_600SemiBold",
+    fontSize: 13,
+    color: "#00113a",
+    marginBottom: 1,
+  },
+  actionSub: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 11,
+    color: "#757682",
+    lineHeight: 15,
+  },
+  actionRightLabel: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 10,
+    letterSpacing: 1,
+    color: "#775a19",
+    flexShrink: 0,
+  },
+
