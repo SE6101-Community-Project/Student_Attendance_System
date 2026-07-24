@@ -421,3 +421,185 @@ export default function FaceRegisterScreen() {
               <Text style={styles.primaryBtnText}>CAPTURE FACE</Text>
             </TouchableOpacity>
           )}
+
+          {/* CAPTURING — disabled spinner */}
+          {isCapturing && (
+            <TouchableOpacity
+              style={[styles.primaryBtn, styles.primaryBtnDisabled]}
+              disabled
+            >
+              <ActivityIndicator color="#ffffff" size="small" />
+              <Text style={styles.primaryBtnText}>CAPTURING…</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* PREVIEW — confirm + retake */}
+          {isPreview && (
+            <>
+              <TouchableOpacity
+                style={styles.primaryBtn}
+                onPress={handleRegister}
+                activeOpacity={0.85}
+              >
+                <MaterialCommunityIcons
+                  name="check"
+                  size={18}
+                  color="#ffffff"
+                />
+                <Text style={styles.primaryBtnText}>
+                  CONFIRM & REGISTER
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.secondaryBtn}
+                onPress={handleRetake}
+                activeOpacity={0.7}
+              >
+                <MaterialCommunityIcons
+                  name="camera-retake-outline"
+                  size={15}
+                  color="#ffffff"
+                />
+                <Text style={styles.secondaryBtnText}>RETAKE</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {/* UPLOADING — disabled spinner */}
+          {isUploading && (
+            <TouchableOpacity
+              style={[styles.primaryBtn, styles.primaryBtnDisabled]}
+              disabled
+            >
+              <ActivityIndicator color="#ffffff" size="small" />
+              <Text style={styles.primaryBtnText}>REGISTERING…</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* SUCCESS — back to profile */}
+          {isSuccess && (
+            <TouchableOpacity
+              style={styles.successBtn}
+              onPress={() => router.back()}
+              activeOpacity={0.85}
+            >
+              <MaterialCommunityIcons
+                name="arrow-left"
+                size={16}
+                color="#ffffff"
+              />
+              <Text style={styles.primaryBtnText}>BACK TO PROFILE</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* ── Step progress indicator ── */}
+        <View style={styles.stepsRow}>
+          {/* Connector lines drawn first (behind dots) */}
+          <View style={[styles.stepLine, { left: "33%" }]} />
+          <View style={[styles.stepLine, { left: "66%" }]} />
+
+          {["Capture", "Confirm", "Register"].map((label, i) => {
+            const active = i <= stepIndex;
+            const done = isSuccess && i === 2;
+            return (
+              <View key={label} style={styles.stepItem}>
+                <View
+                  style={[
+                    styles.stepDot,
+                    active && styles.stepDotActive,
+                    done && styles.stepDotSuccess,
+                  ]}
+                >
+                  {done && (
+                    <MaterialCommunityIcons
+                      name="check"
+                      size={7}
+                      color="#ffffff"
+                    />
+                  )}
+                </View>
+                <Text
+                  style={[
+                    styles.stepLabel,
+                    active && styles.stepLabelActive,
+                  ]}
+                >
+                  {label}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+      </View>
+    </View>
+  );
+}
+
+
+const GOLD = "#775a19";
+const GOLD_LIGHT = "#c4a257";
+const NAVY = "#00113a";
+const GREEN = "#4CAF50";
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: "#000000",
+  },
+
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,17,58,0.52)",
+  },
+
+  uiLayer: {
+    flex: 1,
+  },
+
+  // ── Permission screen ──────────────────────────────────────────────────────
+  permContainer: {
+    flex: 1,
+    backgroundColor: NAVY,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 16,
+    padding: 40,
+  },
+  permTitle: {
+    fontFamily: "Newsreader_400Regular",
+    fontSize: 22,
+    color: "#ffffff",
+    textAlign: "center",
+  },
+  permSub: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 13,
+    color: "rgba(255,255,255,0.6)",
+    textAlign: "center",
+    lineHeight: 20,
+    maxWidth: 280,
+  },
+  permBtn: {
+    backgroundColor: GOLD,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 4,
+    marginTop: 8,
+  },
+  permBtnText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 11,
+    letterSpacing: 3,
+    color: "#ffffff",
+  },
+  permCancelBtn: {
+    paddingVertical: 10,
+  },
+  permCancelText: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 13,
+    color: "rgba(255,255,255,0.5)",
+    textDecorationLine: "underline",
+  },
