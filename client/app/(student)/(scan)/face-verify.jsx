@@ -319,3 +319,132 @@ export default function FaceVerifyScreen() {
               )}
             </TouchableOpacity>
           )}
+
+          {/* Retake — only after capture */}
+          {!capturing && verified && (
+            <TouchableOpacity
+              style={styles.retakeBtn}
+              onPress={handleRetake}
+              activeOpacity={0.7}
+            >
+              <MaterialCommunityIcons
+                name="camera-retake-outline"
+                size={15}
+                color="#ffffff"
+              />
+              <Text style={styles.retakeBtnText}>RETAKE</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: "#000000",
+  },
+
+  // ── Dark overlay on top of camera ──
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,17,58,0.50)",
+  },
+
+  // ── All UI sits on top of camera + overlay ──
+  uiLayer: {
+    flex: 1,
+    // No absolute — flex layout stacks content naturally
+  },
+
+  // ── Permission screen ──
+  permContainer: {
+    flex: 1,
+    backgroundColor: "#00113a",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 16,
+    padding: 40,
+  },
+  permTitle: {
+    fontFamily: "Newsreader_400Regular",
+    fontSize: 22,
+    color: "#ffffff",
+    textAlign: "center",
+  },
+  permSub: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 13,
+    color: "rgba(255,255,255,0.6)",
+    textAlign: "center",
+    lineHeight: 20,
+    maxWidth: 280,
+  },
+  permBtn: {
+    backgroundColor: "#775a19",
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 4,
+    marginTop: 8,
+  },
+  permBtnText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 11,
+    letterSpacing: 3,
+    color: "#ffffff",
+  },
+  permCancelBtn: {
+    paddingVertical: 10,
+  },
+  permCancelText: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 13,
+    color: "rgba(255,255,255,0.5)",
+    textDecorationLine: "underline",
+  },
+
+  // ── Top bar ──
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  topBarTitle: {
+    fontFamily: "Newsreader_400Regular",
+    fontSize: 16,
+    color: "#ffffff", // fixed: was #00113a (invisible on dark overlay)
+    fontWeight: "700",
+  },
+  systemBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: "rgba(76,175,80,0.15)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  systemDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#4CAF50",
+  },
+  systemText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 8,
+    letterSpacing: 2,
+    color: "#4CAF50",
+  },
