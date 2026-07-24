@@ -448,3 +448,186 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     color: "#4CAF50",
   },
+
+  // ── Archival header ──
+  archivalHeader: {
+    flexDirection: "row",
+    gap: 14,
+    paddingHorizontal: 20,
+    marginBottom: 20,
+    marginTop: 4,
+  },
+  archivalAccent: {
+    width: 2,
+    height: 56,
+    backgroundColor: "#775a19",
+  },
+  archivalLabel: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 9,
+    letterSpacing: 3,
+    color: "#c4a257",
+  },
+  archivalTitle: {
+    fontFamily: "Newsreader_400Regular",
+    fontSize: 26,
+    color: "#ffffff",
+    lineHeight: 32,
+  },
+  archivalSub: {
+    fontFamily: "Newsreader_400Regular",
+    fontStyle: "italic",
+    fontSize: 13,
+    color: "rgba(255,255,255,0.65)",
+  },
+
+  // ── Oval guide ──
+  ovalContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+    flex: 1, // takes remaining space between header and bottom
+  },
+  ovalGuide: {
+    width: 200,
+    height: 240,
+    borderRadius: 100,
+    borderWidth: 3,
+    borderColor: "rgba(76,175,80,0.8)",
+    shadowColor: "#4CAF50",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 16,
+  },
+  ovalGuideCapturing: {
+    borderColor: "#F59E0B",
+    shadowColor: "#F59E0B",
+  },
+  ovalGuideVerified: {
+    borderColor: "#4CAF50",
+    shadowOpacity: 1,
+  },
+  verifiedOverlay: {
+    position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  // ── Status card ──
+  statusCard: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    marginHorizontal: 20,
+    marginBottom: 12,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    borderRadius: 12,
+    padding: 14,
+    borderLeftWidth: 3,
+    borderLeftColor: "#775a19",
+  },
+  statusCardIcon: {
+    backgroundColor: "rgba(233,193,118,0.2)",
+    padding: 8,
+    borderRadius: 8,
+  },
+  statusCardTitle: {
+    fontFamily: "Newsreader_400Regular",
+    fontSize: 17,
+    color: "#ffffff",
+    marginBottom: 3,
+  },
+  statusCardSub: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 11,
+    color: "rgba(255,255,255,0.65)",
+    lineHeight: 16,
+  },
+  progressBar: {
+    height: 2,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderRadius: 1,
+    marginTop: 10,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    width: "60%",
+    backgroundColor: "#775a19",
+    borderRadius: 1,
+  },
+
+  // ── Info grid ──
+  infoGrid: {
+    flexDirection: "row",
+    gap: 10,
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  infoCard: {
+    flex: 1,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderRadius: 10,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  infoCardLabel: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 8,
+    letterSpacing: 2,
+    color: "rgba(196,162,87,0.9)",
+    marginBottom: 4,
+  },
+  infoCardValue: {
+    fontFamily: "Newsreader_400Regular",
+    fontSize: 15,
+    color: "#ffffff",
+  },
+
+  // ── Action buttons ──
+  actionRow: {
+    paddingHorizontal: 20,
+    gap: 10,
+  },
+  captureBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    backgroundColor: "#002366",
+    paddingVertical: 16,
+    borderRadius: 4,
+    shadowColor: "#002366",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  captureBtnDisabled: {
+    opacity: 0.6,
+  },
+  captureBtnText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 11,
+    letterSpacing: 3,
+    color: "#ffffff",
+  },
+  retakeBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 13,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.15)",
+  },
+  retakeBtnText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 11,
+    letterSpacing: 3,
+    color: "#ffffff",
+  },
+});
